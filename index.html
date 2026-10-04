@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f39c12">
+  <title>起業すごろく</title>
+  <meta name="description" content="受注しながら起業するための道しるべ。準備→初受注→継続受注→独立・開業→仕組み化の5段階を、すごろくのように1マスずつ進めます。いまやるべき「次の一手」と、受注ログで売上もわかります。">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <meta property="og:title" content="起業すごろく">
+  <meta property="og:description" content="受注しながら、1マスずつ起業へ。いまやるべき「次の一手」がわかる、すごろく形式のロードマップ＆受注ログ。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://kigyo-sugoroku.vercel.app/ogp.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://kigyo-sugoroku.vercel.app/ogp.png">
+</head>
+<body>
+
+  <!-- ログイン画面 -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <span class="login-card__logo"><svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 50 H23 V40 H32 V30 H42 V20 H50"/><path d="M46 20 V10"/><path d="M46 10 L54 13.5 L46 17"/><circle cx="27.5" cy="35" r="3" fill="currentColor" stroke="none"/></svg></span>
+      <h1 class="login-card__title">起業すごろく</h1>
+      <p class="login-card__tagline">受注しながら、1マスずつ起業へ。<br>いまやるべき「次の一手」がわかります。</p>
+      <button id="btn-google-login" class="google-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Googleでログイン
+      </button>
+    </div>
+  </div>
+
+  <div id="app" class="hidden">
+    <header class="app-header">
+      <span class="app-header__brand"><svg width="28" height="28" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-7px"><path d="M13 50 H23 V40 H32 V30 H42 V20 H50"/><path d="M46 20 V10"/><path d="M46 10 L54 13.5 L46 17"/><circle cx="27.5" cy="35" r="3" fill="currentColor" stroke="none"/></svg> 起業すごろく</span>
+      <nav class="app-header__nav">
+        <a href="about.html" class="app-header__about-link">アプリについて</a>
+        <div id="user-info" class="app-header__user hidden">
+          <img id="user-avatar" class="app-header__avatar" src="" alt="" />
+          <span id="user-name" class="app-header__name"></span>
+          <button id="btn-logout" class="btn btn--ghost btn--sm">ログアウト</button>
+        </div>
+      </nav>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="表示の切り替え">
+      <button type="button" class="tabs__btn is-active" role="tab" aria-selected="true" aria-controls="panel-board" id="tab-board" data-tab="board">すごろく</button>
+      <button type="button" class="tabs__btn" role="tab" aria-selected="false" aria-controls="panel-orders" id="tab-orders" data-tab="orders">受注ログ</button>
+    </div>
+
+    <main class="app-main">
+      <div id="loading" class="empty-state">読み込み中…</div>
+
+      <!-- ===== すごろく ===== -->
+      <section id="panel-board" class="panel hidden" role="tabpanel" aria-labelledby="tab-board">
+        <!-- 次の一手 -->
+        <div class="next-move" id="next-move">
+          <p class="next-move__label">
+            <span>次の一手</span>
+            <span class="next-move__stage" id="next-stage"></span>
+          </p>
+          <h2 class="next-move__title" id="next-title"></h2>
+          <p class="next-move__why" id="next-why"></p>
+          <div class="next-move__how" id="next-how-wrap">
+            <span class="next-move__how-label">やり方</span>
+            <p id="next-how"></p>
+          </div>
+          <div class="next-move__actions">
+            <button type="button" id="btn-next-done" class="btn btn--light btn--lg">できた！1マス進む</button>
+            <button type="button" id="btn-next-order" class="btn btn--light btn--lg hidden">受注ログに記録する</button>
+            <button type="button" id="btn-next-detail" class="btn btn--on-primary">メモ・詳細</button>
+            <button type="button" id="btn-next-other" class="btn btn--on-primary">別のやることを見る</button>
+          </div>
+        </div>
+
+        <!-- あがり -->
+        <div class="goal-card hidden" id="goal-card">
+          <span class="goal-card__icon"><svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10 H44 V24 C44 31 39 36 32 36 C25 36 20 31 20 24 Z"/><path d="M20 15 H12 C12 22 15 26 20 26"/><path d="M44 15 H52 C52 22 49 26 44 26"/><path d="M32 36 V46"/><path d="M22 54 H42"/><path d="M26 46 H38 V54 H26 Z"/></svg></span>
+          <h2 class="goal-card__title">あがり！</h2>
+          <p class="goal-card__text">すべてのマスを進みました。ここまでの積み重ねが、あなたの事業の土台です。<br>次の目標は「やることを追加」から自由に足していけます。</p>
+        </div>
+
+        <!-- 全体の進み具合 -->
+        <div class="overall card-surface">
+          <div class="overall__head">
+            <span class="overall__label">全体の進み具合</span>
+            <span class="overall__count" id="overall-count"></span>
+          </div>
+          <div class="bar"><span class="bar__fill" id="overall-bar"></span></div>
+          <div class="board" id="board" aria-label="すごろく盤"></div>
+          <p class="board__legend">マスをタップすると、やることの詳細とメモを見られます。</p>
+        </div>
+
+        <!-- 段階ごとのチェックリスト -->
+        <div id="stage-list" class="stage-list"></div>
+      </section>
+
+      <!-- ===== 受注ログ ===== -->
+      <section id="panel-orders" class="panel hidden" role="tabpanel" aria-labelledby="tab-orders">
+        <div class="stats">
+          <div class="stat card-surface">
+            <span class="stat__label">今月の受注額</span>
+            <span class="stat__value" id="stat-month-won"></span>
+          </div>
+          <div class="stat card-surface">
+            <span class="stat__label">今月の入金額</span>
+            <span class="stat__value" id="stat-month-paid"></span>
+          </div>
+          <div class="stat card-surface">
+            <span class="stat__label">受注件数（累計）</span>
+            <span class="stat__value" id="stat-won-count"></span>
+          </div>
+          <div class="stat card-surface">
+            <span class="stat__label">相談中</span>
+            <span class="stat__value" id="stat-lead-count"></span>
+          </div>
+        </div>
+
+        <div class="chart card-surface">
+          <div class="chart__head">
+            <span class="chart__title">月ごとの受注額</span>
+            <span class="chart__note">直近6か月・「受注」以上の金額</span>
+          </div>
+          <div class="chart__bars" id="month-chart"></div>
+        </div>
+
+        <div class="orders-toolbar">
+          <div class="chips" id="status-filter" role="group" aria-label="状態で絞り込み"></div>
+          <button type="button" id="btn-new-order" class="btn btn--primary"><svg width="16" height="16" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" aria-hidden="true"><path d="M32 12 V52"/><path d="M12 32 H52"/></svg><span>案件を記録</span></button>
+        </div>
+
+        <ul id="order-list" class="order-list"></ul>
+
+        <div id="orders-empty" class="empty-state card-surface hidden">
+          <p class="empty-state__title">まだ案件の記録がありません</p>
+          <p>相談を受けたら「相談中」、決まったら「受注」として記録しましょう。<br>初受注・リピート・月10万円などを達成すると、すごろくのマスが自動で進みます。</p>
+          <div class="empty-state__actions">
+            <button type="button" id="btn-empty-order" class="btn btn--primary">最初の案件を記録する</button>
+          </div>
+        </div>
+        <div id="orders-empty-filter" class="empty-state card-surface hidden">
+          <p>この状態の案件はありません。</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>© 2026 Yuji Nakamura. All rights reserved.</p>
+      <p><a href="https://apps.yuji-nakamura.com/" target="_blank" rel="noopener">他のアプリを見る →</a></p>
+    </footer>
+
+    <button id="feedback-btn" class="feedback-btn" aria-label="ご意見・ご要望"><svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-6px"><rect x="8" y="14" width="48" height="30" rx="8"/><path d="M22 44 L14 54 V44"/></svg> <span class="feedback-btn__label">ご意見・ご要望</span></button>
+  </div>
+
+  <!-- やることの詳細モーダル -->
+  <div id="task-overlay" class="dialog-overlay">
+    <form id="task-form" class="modal modal--wide" novalidate>
+      <div class="modal__head">
+        <span class="pill" id="task-stage-pill"></span>
+        <button type="button" id="btn-task-close" class="modal__close" aria-label="閉じる">&times;</button>
+      </div>
+      <h3 class="task-detail__title" id="task-title"></h3>
+      <div class="field hidden" id="task-title-field">
+        <label class="field__label" for="input-task-title">やること<span class="field__req">必須</span></label>
+        <input type="text" id="input-task-title" maxlength="60" autocomplete="off" />
+      </div>
+      <div class="field hidden" id="task-stage-field">
+        <label class="field__label" for="input-task-stage">段階</label>
+        <select id="input-task-stage" class="select"></select>
+      </div>
+      <div class="task-detail__block" id="task-why-wrap">
+        <span class="task-detail__label">なぜやるか</span>
+        <p id="task-why"></p>
+      </div>
+      <div class="task-detail__block" id="task-how-wrap">
+        <span class="task-detail__label">どうやるか</span>
+        <p id="task-how"></p>
+      </div>
+      <p class="task-detail__auto hidden" id="task-auto"></p>
+      <label class="check">
+        <input type="checkbox" id="input-task-done" />
+        <span id="task-done-label">できた（このマスを完了にする）</span>
+      </label>
+      <div class="field">
+        <label class="field__label" for="input-task-memo">メモ<span class="field__hint">進め方・決めたこと・気づきなど</span></label>
+        <textarea id="input-task-memo" rows="4" maxlength="1000" placeholder="例：サービスの1行説明「小さなお店の集客を、ホームページで手伝います」"></textarea>
+      </div>
+      <div class="modal__actions modal__actions--split">
+        <div class="modal__actions-left">
+          <button type="button" id="btn-task-delete" class="btn btn--ghost is-danger hidden">削除</button>
+        </div>
+        <div class="modal__actions-right">
+          <button type="button" id="btn-task-cancel" class="btn btn--ghost">キャンセル</button>
+          <button type="submit" id="btn-task-save" class="btn btn--primary">保存する</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- やることの追加モーダル -->
+  <div id="add-task-overlay" class="dialog-overlay">
+    <form id="add-task-form" class="modal" novalidate>
+      <div class="modal__head">
+        <div class="modal__title">やることを追加</div>
+        <button type="button" id="btn-add-task-close" class="modal__close" aria-label="閉じる">&times;</button>
+      </div>
+      <div class="field">
+        <label class="field__label" for="input-add-stage">段階</label>
+        <select id="input-add-stage" class="select"></select>
+      </div>
+      <div class="field">
+        <label class="field__label" for="input-add-title">やること<span class="field__req">必須</span></label>
+        <input type="text" id="input-add-title" maxlength="60" placeholder="例：ホームページ制作のサンプルを1つ作る" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label class="field__label" for="input-add-memo">メモ<span class="field__hint">任意</span></label>
+        <textarea id="input-add-memo" rows="3" maxlength="1000"></textarea>
+      </div>
+      <div class="modal__actions">
+        <button type="button" id="btn-add-task-cancel" class="btn btn--ghost">キャンセル</button>
+        <button type="submit" id="btn-add-task-save" class="btn btn--primary">追加する</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 案件の記録モーダル -->
+  <div id="order-overlay" class="dialog-overlay">
+    <form id="order-form" class="modal modal--wide" novalidate>
+      <div class="modal__head">
+        <div class="modal__title" id="order-modal-title">案件を記録</div>
+        <button type="button" id="btn-order-close" class="modal__close" aria-label="閉じる">&times;</button>
+      </div>
+      <div class="field">
+        <label class="field__label" for="input-order-title">案件名<span class="field__req">必須</span></label>
+        <input type="text" id="input-order-title" maxlength="60" placeholder="例：カフェのホームページ制作" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label class="field__label" for="input-order-client">取引先<span class="field__hint">同じ名前で2件受注するとリピートのマスが進みます</span></label>
+        <input type="text" id="input-order-client" maxlength="40" placeholder="例：〇〇カフェ" autocomplete="off" list="client-options" />
+        <datalist id="client-options"></datalist>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field__label" for="input-order-amount">金額（円）</label>
+          <input type="text" id="input-order-amount" inputmode="numeric" maxlength="12" placeholder="例：150000" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label class="field__label" for="input-order-date">受注日<span class="field__hint">相談中は相談日</span></label>
+          <input type="date" id="input-order-date" />
+        </div>
+      </div>
+      <div class="field">
+        <span class="field__label" id="order-status-label">状態</span>
+        <div class="status-picker" id="order-status-picker" role="radiogroup" aria-labelledby="order-status-label"></div>
+      </div>
+      <div class="field">
+        <label class="field__label" for="input-order-memo">メモ<span class="field__hint">任意</span></label>
+        <textarea id="input-order-memo" rows="3" maxlength="1000" placeholder="例：納期 11/30、修正2回まで"></textarea>
+      </div>
+      <div class="modal__actions modal__actions--split">
+        <div class="modal__actions-left">
+          <button type="button" id="btn-order-delete" class="btn btn--ghost is-danger hidden">削除</button>
+        </div>
+        <div class="modal__actions-right">
+          <button type="button" id="btn-order-cancel" class="btn btn--ghost">キャンセル</button>
+          <button type="submit" id="btn-order-save" class="btn btn--primary">保存する</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- マスが進んだお祝い -->
+  <div id="celebrate-overlay" class="dialog-overlay">
+    <div class="dialog dialog--celebrate">
+      <span class="dialog__icon"><svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 50 H23 V40 H32 V30 H42 V20 H50"/><path d="M46 20 V10"/><path d="M46 10 L54 13.5 L46 17"/><circle cx="27.5" cy="35" r="3" fill="currentColor" stroke="none"/></svg></span>
+      <div class="dialog__title">マスが進みました！</div>
+      <ul class="dialog__list" id="celebrate-list"></ul>
+      <div class="dialog__actions dialog__actions--center">
+        <button id="btn-celebrate-ok" class="btn btn--primary">すごろくを見る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 削除確認ダイアログ（カスタムUI） -->
+  <div id="confirm-dialog-overlay" class="dialog-overlay">
+    <div class="dialog">
+      <div class="dialog__title" id="confirm-dialog-title">削除しますか？</div>
+      <div class="dialog__text" id="confirm-dialog-text">削除すると元に戻せません。</div>
+      <div class="dialog__actions">
+        <button id="btn-confirm-cancel" class="btn btn--ghost">キャンセル</button>
+        <button id="btn-confirm-delete" class="btn btn--danger">削除する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 要望送信モーダル -->
+  <div id="feedback-modal-overlay" class="dialog-overlay">
+    <div class="modal">
+      <div class="modal__head">
+        <div class="modal__title">ご意見・ご要望</div>
+        <button id="btn-feedback-close" class="modal__close" aria-label="閉じる">&times;</button>
+      </div>
+      <textarea id="input-feedback-message" rows="5" maxlength="2000" placeholder="ご意見・ご要望・バグ報告など、なんでもどうぞ"></textarea>
+      <div class="modal__actions">
+        <button id="btn-feedback-send" class="btn btn--primary">送信する</button>
+      </div>
+      <p class="modal__note">送信内容は開発者に届きます。個人情報は入力しないでください。</p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

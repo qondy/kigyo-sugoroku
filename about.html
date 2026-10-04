@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>起業すごろく — 機能紹介</title>
+<meta name="description" content="受注しながら起業するための道しるべ。準備→初受注→継続受注→独立・開業→仕組み化の5段階を、すごろくのように1マスずつ進めます。いまやるべき「次の一手」と、受注ログで売上もわかります。">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:title" content="起業すごろく — 機能紹介">
+<meta property="og:image" content="https://kigyo-sugoroku.vercel.app/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --c1: #f39c12;
+    --c2: #d68910;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: #1a1a1a;
+    color: #ececec;
+    line-height: 1.7;
+  }
+  a { color: inherit; text-decoration: none; }
+  .topbar {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 24px 20px 0;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #9a9a9a;
+    transition: color .15s ease;
+  }
+  .back-link:hover { color: #fff; }
+
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: var(--c1);
+    margin: 24px 20px 0;
+    border-radius: 24px;
+    padding: 64px 24px;
+    text-align: center;
+  }
+  .hero::before, .hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: #ffffff;
+    opacity: 0.07;
+    filter: blur(10px);
+  }
+  .hero::before { width: 240px; height: 240px; top: -80px; left: -60px; }
+  .hero::after { width: 300px; height: 300px; bottom: -120px; right: -80px; }
+  .badge {
+    position: relative;
+    width: 128px;
+    height: 128px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.94);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--c1);
+    box-shadow: 0 0 0 14px rgba(255,255,255,0.14);
+  }
+  .category-pill {
+    position: relative;
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    position: relative;
+    margin: 0 0 12px;
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 800;
+    color: #fff;
+  }
+  .hero p.tagline {
+    position: relative;
+    margin: 0 auto 32px;
+    max-width: 520px;
+    font-size: 17px;
+    color: rgba(255,255,255,0.88);
+  }
+  .cta {
+    position: relative;
+    display: inline-block;
+    background: #fff;
+    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 14px 36px;
+    border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    transition: transform .15s ease;
+  }
+  .cta:hover { transform: translateY(-2px); }
+
+  .features {
+    max-width: 880px;
+    margin: 56px auto 0;
+    padding: 0 20px;
+  }
+  .features h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 24px;
+    color: #fff;
+  }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .feature-card {
+    background: #2a2114;
+    border: 1px solid #3d2f18;
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .feature-icon {
+    color: var(--c1);
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  .feature-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: #fff;
+  }
+  .feature-desc {
+    font-size: 14px;
+    color: #d8c4a6;
+    margin: 0;
+  }
+
+  .steps {
+    max-width: 880px;
+    margin: 40px auto 0;
+    padding: 0 20px;
+  }
+  .steps h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 20px;
+    color: #fff;
+  }
+  .step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 14px 0;
+    border-top: 1px solid #3a2c16;
+  }
+  .step:first-of-type { border-top: 0; }
+  .step-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--c1);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step p { margin: 0; font-size: 14px; color: #e6d6bf; }
+  .step strong { color: #fff; }
+  code {
+    background: rgba(255,255,255,0.1);
+    color: #ffe7a3;
+    border-radius: 4px;
+    padding: 0 4px;
+    font-size: 0.95em;
+  }
+
+  .note {
+    max-width: 880px;
+    margin: 24px auto 0;
+    padding: 0 20px;
+    font-size: 13px;
+    color: #a8957a;
+  }
+
+  .footer-cta {
+    max-width: 880px;
+    margin: 56px auto 0;
+    padding: 0 20px 64px;
+    text-align: center;
+  }
+  .footer-cta .cta {
+    background: var(--c1);
+    color: #fff;
+    box-shadow: none;
+  }
+  .footer-links {
+    margin-top: 20px;
+    font-size: 13px;
+    color: #a8957a;
+  }
+  .footer-links a { color: #9a9a9a; }
+  .footer-links a:hover { color: #fff; }
+</style></head>
+<body>
+  <div class="topbar">
+    <a class="back-link" href="https://apps.yuji-nakamura.com/">← アプリ一覧に戻る</a>
+  </div>
+
+  <section class="hero">
+    <span class="category-pill">仕事</span>
+    <div class="badge"><svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 50 H23 V40 H32 V30 H42 V20 H50"/><path d="M46 20 V10"/><path d="M46 10 L54 13.5 L46 17"/><circle cx="27.5" cy="35" r="3" fill="currentColor" stroke="none"/></svg></div>
+    <h1>起業すごろく</h1>
+    <p class="tagline">受注しながら、1マスずつ起業へ。「何からやればいいか」がいつでもわかる、すごろく形式のロードマップと受注ログのアプリです。</p>
+    <a class="cta" href="https://kigyo-sugoroku.vercel.app">アプリを使ってみる →</a>
+  </section>
+
+  <section class="features">
+    <h2>できること</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><svg width="30" height="30" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="22"/><path d="M38 26 L44 20"/><path d="M44 20 H36"/><path d="M44 20 V28"/><circle cx="32" cy="32" r="3" fill="currentColor" stroke="none"/></svg></div>
+        <h3 class="feature-title">いまやるべき「次の一手」</h3>
+        <p class="feature-desc">まだ終わっていないことの中から、いちばん先にやるべき1つを大きく表示。「なぜやるか」「どうやるか」もセットなので、迷わず動けます。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><svg width="30" height="30" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 50 H23 V40 H32 V30 H42 V20 H50"/><path d="M46 20 V10"/><path d="M46 10 L54 13.5 L46 17"/><circle cx="27.5" cy="35" r="3" fill="currentColor" stroke="none"/></svg></div>
+        <h3 class="feature-title">5段階のすごろく</h3>
+        <p class="feature-desc">準備 → 初受注 → 継続受注 → 独立・開業 → 仕組み化。35のマスを、できたものから1マスずつ進めます。いまどこにいるかが一目でわかります。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><svg width="30" height="30" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="10" width="40" height="46" rx="5"/><path d="M24 10 V6 H40 V10"/><path d="M20 24 L24 28 L30 20"/><path d="M34 25 H44"/><path d="M20 40 L24 44 L30 36"/><path d="M34 41 H44"/></svg></div>
+        <h3 class="feature-title">やることリスト入り</h3>
+        <p class="feature-desc">サービスの1行説明、料金の決め方、見積書のひな形、開業届、青色申告まで。受注しながら起業するための「やること」が最初から入っています。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><svg width="30" height="30" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 54 H54"/><rect x="14" y="34" width="8" height="20"/><rect x="28" y="24" width="8" height="30"/><rect x="42" y="12" width="8" height="42"/></svg></div>
+        <h3 class="feature-title">受注ログで売上を見える化</h3>
+        <p class="feature-desc">案件名・取引先・金額・状態（相談中／受注／納品済／入金済／見送り）を記録。今月の受注額・入金額と、月ごとの受注額をグラフで確認できます。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><svg width="30" height="30" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22 H44 L36 14"/><path d="M52 42 H20 L28 50"/></svg></div>
+        <h3 class="feature-title">マイルストーンは自動で進む</h3>
+        <p class="feature-desc">初受注・初入金・リピート・受注5件・月10万円・月30万円などは、受注ログに記録するだけで自動でマスが進みます。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><svg width="30" height="30" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 10 H42 L50 18 V54 H14 Z"/><path d="M22 28 H42"/><path d="M22 38 H42"/><path d="M22 48 H34"/></svg></div>
+        <h3 class="feature-title">メモと自分だけのやること</h3>
+        <p class="feature-desc">各マスに、決めたことや気づきをメモできます。自分に必要なやることも、好きな段階に追加できます。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="steps">
+    <h2>使い方</h2>
+    <div class="step">
+      <span class="step-num">1</span>
+      <p><strong>Googleでログイン</strong>：進み具合と受注ログは、あなた専用の領域に保存されます。スマホとPCで同じ内容を使えます。</p>
+    </div>
+    <div class="step">
+      <span class="step-num">2</span>
+      <p><strong>「次の一手」をやってみる</strong>：画面の上に、いまやるべきことが1つ表示されます。気が乗らなければ「別のやることを見る」で切り替えられます。</p>
+    </div>
+    <div class="step">
+      <span class="step-num">3</span>
+      <p><strong>できたら1マス進む</strong>：「できた！1マス進む」を押すと、すごろくのコマが次のマスへ進みます。</p>
+    </div>
+    <div class="step">
+      <span class="step-num">4</span>
+      <p><strong>相談や受注を記録する</strong>：「受注ログ」タブで案件を記録します。状態は一覧からすぐに変えられます。</p>
+    </div>
+    <div class="step">
+      <span class="step-num">5</span>
+      <p><strong>あがりを目指す</strong>：受注ログを続けるうちにマイルストーンのマスも進み、独立・開業、仕組み化へと進んでいきます。</p>
+    </div>
+  </section>
+
+  <p class="note">※ 開業届・青色申告・インボイス・保険などの手続きは一般的な目安です。最新の情報は税務署・市区町村の窓口や専門家にご確認ください。</p>
+
+  <section class="footer-cta">
+    <a class="cta" href="https://kigyo-sugoroku.vercel.app">今すぐ使ってみる →</a>
+    <p class="footer-links"><a href="https://apps.yuji-nakamura.com/">他のアプリも見る</a></p>
+  </section>
+</body>
+</html>

@@ -1,0 +1,988 @@
+.app-main {
+  padding-bottom: 96px;
+}
+
+.inline-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn {
+  &--light {
+    background: #fff;
+    color: $color-primary-ink;
+
+    &:hover:not(:disabled) {
+      background: $color-surface-2;
+    }
+  }
+
+  &--on-primary {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.28);
+    }
+  }
+}
+
+// ===== Tabs =====
+.tabs {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-md;
+  background: rgba($color-bg, 0.94);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid $color-border;
+
+  &__btn {
+    flex: 1;
+    max-width: 200px;
+    padding: 10px $spacing-md;
+    border-radius: 999px;
+    font-size: $font-size-base;
+    font-weight: 700;
+    color: $color-text-muted;
+
+    &:hover {
+      color: $color-primary-ink;
+    }
+
+    &.is-active {
+      background: $color-primary;
+      color: #fff;
+    }
+  }
+}
+
+// ===== Next move =====
+.next-move {
+  background: $color-primary;
+  color: #fff;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: 0 8px 24px rgba($color-primary, 0.25);
+
+  &__label {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+    font-size: $font-size-sm;
+    font-weight: 800;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__stage {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: $font-size-xs;
+    font-weight: 700;
+  }
+
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: 800;
+    line-height: 1.4;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__why {
+    font-size: $font-size-base;
+    line-height: 1.7;
+    margin-bottom: $spacing-md;
+  }
+
+  &__how {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: $radius-md;
+    padding: $spacing-md;
+    font-size: $font-size-sm;
+    line-height: 1.75;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__how-label {
+    display: block;
+    font-size: $font-size-xs;
+    font-weight: 800;
+    margin-bottom: 2px;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+
+    .btn--lg {
+      flex: 1 1 100%;
+
+      @media (min-width: $bp-mobile) {
+        flex: 0 0 auto;
+      }
+    }
+  }
+}
+
+.goal-card {
+  text-align: center;
+  background: $color-primary;
+  color: #fff;
+  border-radius: $radius-lg;
+  padding: $spacing-xl $spacing-lg;
+  margin-bottom: $spacing-md;
+
+  &__icon {
+    display: inline-block;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__title {
+    font-size: $font-size-2xl;
+    font-weight: 800;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__text {
+    font-size: $font-size-sm;
+    line-height: 1.8;
+  }
+}
+
+// ===== Progress bar =====
+.bar {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: $color-surface-2;
+  overflow: hidden;
+
+  &__fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: $color-primary;
+    transition: width 0.4s ease;
+  }
+
+  &--sm {
+    height: 6px;
+    width: 64px;
+  }
+}
+
+// ===== Overall + board =====
+.overall {
+  margin-bottom: $spacing-md;
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: 800;
+  }
+
+  &__count {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    color: $color-primary-ink;
+  }
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  gap: 6px;
+  margin-top: $spacing-md;
+
+  &__cell {
+    position: relative;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-sm;
+    border: 2px solid $color-border;
+    background: $color-surface;
+    color: $color-text-muted;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    transition: transform 0.1s ease, border-color 0.15s ease;
+
+    &:is(button):hover {
+      border-color: $color-primary;
+    }
+
+    &:is(button):active {
+      transform: scale(0.94);
+    }
+
+    // 段階の切れ目（左上に段階番号）
+    &.is-stage-start::before {
+      content: attr(data-stage);
+      position: absolute;
+      top: -7px;
+      left: -5px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: $color-text;
+      color: #fff;
+      font-size: 10px;
+      line-height: 16px;
+      text-align: center;
+    }
+
+    &.is-done {
+      background: $color-primary;
+      border-color: $color-primary;
+      color: #fff;
+    }
+
+    &.is-current {
+      border-color: $color-primary;
+      background: $color-surface-2;
+      color: $color-primary-ink;
+      animation: piece-bounce 1.6s ease-in-out infinite;
+    }
+
+    &--start,
+    &--goal {
+      grid-column: span 2;
+      aspect-ratio: auto;
+      font-size: $font-size-xs;
+      background: $color-surface-2;
+      border-style: dashed;
+      color: $color-primary-ink;
+    }
+
+    &--goal.is-reached {
+      background: $color-primary;
+      border-color: $color-primary;
+      border-style: solid;
+      color: #fff;
+    }
+  }
+
+  &__legend {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    margin-top: $spacing-sm;
+  }
+}
+
+@keyframes piece-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board__cell.is-current {
+    animation: none;
+  }
+}
+
+// ===== Stage list =====
+.stage-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.stage {
+  padding: 0;
+  overflow: hidden;
+
+  &.is-current {
+    box-shadow: 0 0 0 2px $color-primary;
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    width: 100%;
+    padding: $spacing-md;
+    text-align: left;
+    color: $color-text;
+  }
+
+  &__num {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: $color-surface-2;
+    color: $color-primary-ink;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &.is-complete &__num,
+  &.is-current &__num {
+    background: $color-primary;
+    color: #fff;
+  }
+
+  &__titles {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__name {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    font-size: $font-size-base;
+    font-weight: 800;
+  }
+
+  &__now {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    background: $color-primary-ink;
+    border-radius: 999px;
+    padding: 1px 8px;
+  }
+
+  &__goal {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    line-height: 1.5;
+  }
+
+  &__meta {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  &__count {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    color: $color-primary-ink;
+  }
+
+  &__chevron {
+    color: $color-text-muted;
+    transition: transform 0.2s ease;
+  }
+
+  &__head[aria-expanded='true'] &__chevron {
+    transform: rotate(90deg);
+  }
+
+  &__add {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 12px $spacing-md;
+    border-top: 1px dashed $color-border;
+    color: $color-primary-ink;
+    font-size: $font-size-sm;
+    font-weight: 700;
+
+    &:hover {
+      background: $color-surface-2;
+    }
+  }
+}
+
+.task-list {
+  border-top: 1px solid $color-border;
+}
+
+.task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+
+  & + & {
+    border-top: 1px solid $color-border;
+  }
+
+  &__check {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    margin-top: 6px;
+    border-radius: 50%;
+    border: 2px solid $color-border;
+    background: $color-surface;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover:not(:disabled) {
+      border-color: $color-primary;
+    }
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+
+  &.is-done &__check {
+    background: $color-primary;
+    border-color: $color-primary;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    padding: 8px 0;
+    color: $color-text;
+  }
+
+  &__title {
+    display: block;
+    font-size: $font-size-base;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  &.is-done &__title {
+    color: $color-text-muted;
+    text-decoration: line-through;
+    text-decoration-color: rgba($color-text-muted, 0.5);
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+  }
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: $color-surface-2;
+  color: $color-primary-ink;
+  font-size: $font-size-xs;
+  font-weight: 600;
+
+  &--auto {
+    background: #e8f1f8;
+    color: #1f618d;
+  }
+}
+
+.pill {
+  display: inline-block;
+  background: $color-surface-2;
+  color: $color-primary-ink;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: $font-size-xs;
+  font-weight: 700;
+}
+
+// ===== Task detail =====
+.task-detail {
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: 800;
+    line-height: 1.4;
+    margin-bottom: $spacing-md;
+  }
+
+  &__block {
+    margin-bottom: $spacing-md;
+    font-size: $font-size-sm;
+    line-height: 1.75;
+  }
+
+  &__label {
+    display: block;
+    font-size: $font-size-xs;
+    font-weight: 800;
+    color: $color-primary-ink;
+    margin-bottom: 2px;
+  }
+
+  &__auto {
+    background: #e8f1f8;
+    color: #1f618d;
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-xs;
+    line-height: 1.6;
+    margin-bottom: $spacing-md;
+  }
+}
+
+// ===== Orders =====
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+
+  @media (min-width: $bp-tablet) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat {
+  padding: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__label {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    font-weight: 700;
+  }
+
+  &__value {
+    font-size: $font-size-xl;
+    font-weight: 800;
+    color: $color-text;
+    font-variant-numeric: tabular-nums;
+    word-break: break-all;
+  }
+}
+
+.chart {
+  margin-bottom: $spacing-md;
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: $spacing-xs;
+    margin-bottom: $spacing-md;
+  }
+
+  &__title {
+    font-size: $font-size-sm;
+    font-weight: 800;
+  }
+
+  &__note {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__bars {
+    display: flex;
+    align-items: stretch;
+    gap: $spacing-sm;
+    height: 150px;
+  }
+
+  &__col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__value {
+    font-size: 11px;
+    font-weight: 700;
+    color: $color-primary-ink;
+    min-height: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__track {
+    flex: 1;
+    width: 100%;
+    max-width: 44px;
+    display: flex;
+    align-items: flex-end;
+    background: $color-surface-2;
+    border-radius: $radius-sm;
+    overflow: hidden;
+  }
+
+  &__fill {
+    display: block;
+    width: 100%;
+    background: $color-primary;
+    border-radius: $radius-sm $radius-sm 0 0;
+    transition: height 0.4s ease;
+  }
+
+  &__label {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+}
+
+.orders-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+
+  .btn--primary {
+    margin-left: auto;
+  }
+}
+
+.chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.chip {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid $color-border;
+  background: $color-surface;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: $color-primary;
+    color: $color-primary-ink;
+  }
+
+  &.is-active {
+    background: $color-primary;
+    border-color: $color-primary;
+    color: #fff;
+  }
+}
+
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.order {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  border-left: 4px solid transparent;
+
+  @each $status, $color in $status-colors {
+    &[data-status='#{$status}'] {
+      border-left-color: $color;
+    }
+  }
+
+  &[data-status='lost'] {
+    opacity: 0.75;
+  }
+
+  &__main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-align: left;
+    color: $color-text;
+  }
+
+  &__title {
+    font-size: $font-size-base;
+    font-weight: 700;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px $spacing-sm;
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__memo {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__side {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  &__amount {
+    font-size: $font-size-base;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.status-select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: $font-size-xs !important;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  text-align: center;
+
+  @each $status, $color in $status-colors {
+    &--#{$status} {
+      background: $color;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.status-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.status-option {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 2px solid $color-border;
+  background: $color-surface;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  color: $color-text-muted;
+
+  @each $status, $color in $status-colors {
+    &--#{$status}.is-active {
+      background: $color;
+      border-color: $color;
+      color: #fff;
+    }
+  }
+}
+
+// ===== Forms / modal additions =====
+.select {
+  width: 100%;
+  padding: 10px $spacing-md;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-surface;
+  color: $color-text;
+  font-size: $font-size-base;
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.15);
+  }
+}
+
+.field {
+  &__req {
+    font-size: 11px;
+    color: $color-primary-ink;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+
+  input[type='date'] {
+    width: 100%;
+    padding: 9px $spacing-md;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    background: $color-surface;
+    font-size: $font-size-base;
+    color: $color-text;
+    min-height: 44px;
+  }
+
+  input[type='text']:focus,
+  input[type='date']:focus,
+  textarea:focus {
+    outline: none;
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.15);
+  }
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 $spacing-md;
+
+  @media (min-width: $bp-mobile) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  margin-bottom: $spacing-lg;
+  padding: 12px $spacing-md;
+  background: $color-surface-2;
+  border-radius: $radius-md;
+  cursor: pointer;
+
+  input {
+    width: 20px;
+    height: 20px;
+    accent-color: $color-primary;
+    flex-shrink: 0;
+  }
+
+  input:disabled + span {
+    color: $color-text-muted;
+  }
+}
+
+.modal {
+  &--wide {
+    max-width: 600px;
+  }
+
+  &__actions--split {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  &__actions-left,
+  &__actions-right {
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  &__actions-right {
+    margin-left: auto;
+  }
+}
+
+.dialog {
+  &--celebrate {
+    text-align: center;
+  }
+
+  &__icon {
+    display: inline-block;
+    color: $color-primary;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__list {
+    margin: $spacing-sm 0 $spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    li {
+      background: $color-surface-2;
+      color: $color-primary-ink;
+      border-radius: $radius-md;
+      padding: $spacing-sm $spacing-md;
+      font-size: $font-size-sm;
+      font-weight: 700;
+    }
+  }
+
+  &__actions--center {
+    justify-content: center;
+  }
+}
+
+.empty-state {
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: 800;
+    color: $color-text;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $spacing-sm;
+    margin-top: $spacing-lg;
+  }
+}
+
+// フィードボタンが一覧の最後の要素に被らないよう、スマホでは丸ボタンにする
+@media (max-width: $bp-mobile) {
+  .feedback-btn {
+    padding: 12px;
+    bottom: 16px;
+    right: 16px;
+
+    &__label {
+      display: none;
+    }
+  }
+
+  .next-move {
+    padding: $spacing-md;
+
+    &__title {
+      font-size: $font-size-lg;
+    }
+  }
+
+  .app-header {
+    padding: $spacing-sm $spacing-md;
+  }
+}
