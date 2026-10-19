@@ -962,6 +962,179 @@
   }
 }
 
+.link-btn {
+  color: $color-primary-ink;
+  font-size: $font-size-sm;
+  font-weight: 700;
+  padding: 2px 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ===== 今日の心構え =====
+.today-mindset {
+  margin-bottom: $spacing-md;
+  border-left: 4px solid $color-primary;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: $font-size-xs;
+    font-weight: 800;
+    color: $color-primary-ink;
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: 800;
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  &__body {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    line-height: 1.8;
+    margin-bottom: $spacing-sm;
+  }
+}
+
+// ===== 心構え =====
+.mindset-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+
+  &__icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: $color-primary;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  &__text p {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    line-height: 1.75;
+  }
+}
+
+.mindset-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+
+  &__count {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    font-weight: 600;
+  }
+
+  .btn--primary {
+    margin-left: auto;
+  }
+}
+
+.mindset-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.mindset {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg $spacing-md $spacing-md;
+
+  &__num {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: $color-surface-2;
+    color: $color-primary-ink;
+    font-size: $font-size-sm;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &.is-custom &__num {
+    background: $color-primary;
+    color: #fff;
+  }
+
+  &__main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: $font-size-base;
+    font-weight: 800;
+    line-height: 1.55;
+    margin-top: 3px;
+    overflow-wrap: anywhere;
+  }
+
+  &__body {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    line-height: 1.8;
+    margin-top: 6px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .tag {
+    margin-top: $spacing-sm;
+  }
+
+  &__edit {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    margin: -4px -8px 0 0;
+    border-radius: 50%;
+    color: $color-text-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: $color-surface-2;
+      color: $color-primary-ink;
+    }
+  }
+}
+
 // フィードボタンが一覧の最後の要素に被らないよう、スマホでは丸ボタンにする
 @media (max-width: $bp-mobile) {
   .feedback-btn {

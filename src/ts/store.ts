@@ -3,7 +3,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { BUILTIN_IDS } from './steps';
-import { CustomTask, Order, OrderData, OrderStatus, Progress, StageId } from './types';
+import { CustomMindset, CustomTask, Order, OrderData, OrderStatus, Progress, StageId } from './types';
 
 export const MAX_TASK_TITLE = 60;
 export const MAX_MEMO = 1000;
@@ -11,6 +11,9 @@ export const MAX_CUSTOM_TASKS = 100;
 export const MAX_ORDER_TITLE = 60;
 export const MAX_CLIENT = 40;
 export const MAX_AMOUNT = 100_000_000;
+export const MAX_MINDSET_TITLE = 60;
+export const MAX_MINDSET_BODY = 500;
+export const MAX_CUSTOM_MINDSETS = 100;
 
 export const ORDER_STATUSES: OrderStatus[] = ['lead', 'won', 'delivered', 'paid', 'lost'];
 
@@ -172,4 +175,50 @@ export function setOrderStatus(uid: string, id: string, status: OrderStatus): Pr
 
 export function deleteOrder(uid: string, id: string): Promise<void> {
   return deleteDoc(doc(ordersCol(uid), id));
+}
+
+// ============================================================
+// 自分で追加した「心構え」
+// ============================================================
+const mindsetsCol = (uid: string) => collection(db, 'users', uid, 'mindsets');
+
+export function subscribeMindsets(
+  uid: string,
+  onData: (list: CustomMindset[]) => void,
+  onError: OnError,
+): Unsub {
+  return onSnapshot(mindsetsCol(uid), (snap) => {
+    const list: CustomMindset[] = [];
+    snap.forEach((d) => {
+      const data = d.data();
+      if (typeof data.title !== 'string') return;
+      list.push({
+        id: d.id,
+        title: str(data.title, MAX_MINDSET_TITLE),
+        body: str(data.body, MAX_MINDSET_BODY),
+        createdAt: msOrZero(data.createdAt),
+      });
+    });
+    list.sort((a, b) => a.createdAt - b.createdAt);
+    onData(list);
+  }, onError);
+}
+
+export async function createMindset(uid: string, title: string, body: string): Promise<void> {
+  await addDoc(mindsetsCol(uid), {
+    title: title.trim().slice(0, MAX_MINDSET_TITLE),
+    body: body.trim().slice(0, MAX_MINDSET_BODY),
+    createdAt: Date.now(),
+  });
+}
+
+export function updateMindset(uid: string, id: string, title: string, body: string): Promise<void> {
+  return updateDoc(doc(mindsetsCol(uid), id), {
+    title: title.trim().slice(0, MAX_MINDSET_TITLE),
+    body: body.trim().slice(0, MAX_MINDSET_BODY),
+  });
+}
+
+export function deleteMindset(uid: string, id: string): Promise<void> {
+  return deleteDoc(doc(mindsetsCol(uid), id));
 }

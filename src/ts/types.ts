@@ -77,3 +77,19 @@ export interface Order extends OrderData {
   createdAt: number;
   updatedAt: number;
 }
+
+/** ユーザーが追加した「心構え」（users/{uid}/mindsets/{id}） */
+export interface CustomMindset {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: number;
+}
+
+/** 画面表示用にまとめた「心構え」 */
+export interface MindsetView {
+  key: string;
+  title: string;
+  body: string;
+  custom: boolean;
+}

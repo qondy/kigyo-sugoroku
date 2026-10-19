@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#f39c12">
   <title>起業すごろく</title>
-  <meta name="description" content="受注しながら起業するための道しるべ。準備→初受注→継続受注→独立・開業→仕組み化の5段階を、すごろくのように1マスずつ進めます。いまやるべき「次の一手」と、受注ログで売上もわかります。">
+  <meta name="description" content="受注しながら起業するための道しるべ。準備→初受注→継続受注→独立・開業→仕組み化の5段階を、すごろくのように1マスずつ進めます。いまやるべき「次の一手」と、受注ログで売上もわかります。起業の心構えもいつでも読み返せます。">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -58,6 +58,7 @@
     <div class="tabs" role="tablist" aria-label="表示の切り替え">
       <button type="button" class="tabs__btn is-active" role="tab" aria-selected="true" aria-controls="panel-board" id="tab-board" data-tab="board">すごろく</button>
       <button type="button" class="tabs__btn" role="tab" aria-selected="false" aria-controls="panel-orders" id="tab-orders" data-tab="orders">受注ログ</button>
+      <button type="button" class="tabs__btn" role="tab" aria-selected="false" aria-controls="panel-mindsets" id="tab-mindsets" data-tab="mindsets">心構え</button>
     </div>
 
     <main class="app-main">
@@ -90,6 +91,17 @@
           <span class="goal-card__icon"><svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10 H44 V24 C44 31 39 36 32 36 C25 36 20 31 20 24 Z"/><path d="M20 15 H12 C12 22 15 26 20 26"/><path d="M44 15 H52 C52 22 49 26 44 26"/><path d="M32 36 V46"/><path d="M22 54 H42"/><path d="M26 46 H38 V54 H26 Z"/></svg></span>
           <h2 class="goal-card__title">あがり！</h2>
           <p class="goal-card__text">すべてのマスを進みました。ここまでの積み重ねが、あなたの事業の土台です。<br>次の目標は「やることを追加」から自由に足していけます。</p>
+        </div>
+
+        <!-- 今日の心構え -->
+        <div class="today-mindset card-surface hidden" id="today-mindset">
+          <div class="today-mindset__head">
+            <span class="today-mindset__label"><svg width="16" height="16" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M32 52 C20 44 10 36 10 24 C10 17 15 12 22 12 C27 12 30 15 32 18 C34 15 37 12 42 12 C49 12 54 17 54 24 C54 36 44 44 32 52 Z"/></svg>今日の心構え</span>
+            <button type="button" id="btn-today-next" class="link-btn">次の心構え</button>
+          </div>
+          <p class="today-mindset__title" id="today-title"></p>
+          <p class="today-mindset__body" id="today-body"></p>
+          <button type="button" id="btn-today-all" class="link-btn">心構えをすべて見る →</button>
         </div>
 
         <!-- 全体の進み具合 -->
@@ -153,6 +165,21 @@
         <div id="orders-empty-filter" class="empty-state card-surface hidden">
           <p>この状態の案件はありません。</p>
         </div>
+      </section>
+      <!-- ===== 心構え ===== -->
+      <section id="panel-mindsets" class="panel hidden" role="tabpanel" aria-labelledby="tab-mindsets">
+        <div class="mindset-intro card-surface">
+          <span class="mindset-intro__icon"><svg width="28" height="28" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M32 52 C20 44 10 36 10 24 C10 17 15 12 22 12 C27 12 30 15 32 18 C34 15 37 12 42 12 C49 12 54 17 54 24 C54 36 44 44 32 52 Z"/></svg></span>
+          <div class="mindset-intro__text">
+            <h2 class="mindset-intro__title">起業の心構え</h2>
+            <p>迷ったとき・不安なとき・仕事を受ける前に読み返す、あなたの心構え帳です。大切だと思った言葉は自分でも追加できます。</p>
+          </div>
+        </div>
+        <div class="mindset-toolbar">
+          <p class="mindset-toolbar__count" id="mindset-count"></p>
+          <button type="button" id="btn-new-mindset" class="btn btn--primary"><svg width="16" height="16" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" aria-hidden="true"><path d="M32 12 V52"/><path d="M12 32 H52"/></svg><span>心構えを追加</span></button>
+        </div>
+        <ol id="mindset-list" class="mindset-list"></ol>
       </section>
     </main>
 
@@ -231,6 +258,33 @@
       <div class="modal__actions">
         <button type="button" id="btn-add-task-cancel" class="btn btn--ghost">キャンセル</button>
         <button type="submit" id="btn-add-task-save" class="btn btn--primary">追加する</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 心構えの追加・編集モーダル -->
+  <div id="mindset-overlay" class="dialog-overlay">
+    <form id="mindset-form" class="modal" novalidate>
+      <div class="modal__head">
+        <div class="modal__title" id="mindset-modal-title">心構えを追加</div>
+        <button type="button" id="btn-mindset-close" class="modal__close" aria-label="閉じる">&times;</button>
+      </div>
+      <div class="field">
+        <label class="field__label" for="input-mindset-title">ひとことで<span class="field__req">必須</span></label>
+        <input type="text" id="input-mindset-title" maxlength="60" placeholder="例：相手の「なぜ」を先に聞く" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label class="field__label" for="input-mindset-body">くわしく<span class="field__hint">任意・500文字まで</span></label>
+        <textarea id="input-mindset-body" rows="5" maxlength="500" placeholder="例：依頼の内容より先に、それで何を実現したいのかを確認する。目的がわかれば、提案の質が上がる。"></textarea>
+      </div>
+      <div class="modal__actions modal__actions--split">
+        <div class="modal__actions-left">
+          <button type="button" id="btn-mindset-delete" class="btn btn--ghost is-danger hidden">削除</button>
+        </div>
+        <div class="modal__actions-right">
+          <button type="button" id="btn-mindset-cancel" class="btn btn--ghost">キャンセル</button>
+          <button type="submit" id="btn-mindset-save" class="btn btn--primary">保存する</button>
+        </div>
       </div>
     </form>
   </div>

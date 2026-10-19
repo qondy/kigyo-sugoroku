@@ -6,14 +6,18 @@ import {
   subscribeProgress, saveProgress,
   subscribeCustomTasks, createCustomTask, updateCustomTask, deleteCustomTask,
   subscribeOrders, createOrder, updateOrder, setOrderStatus, deleteOrder,
-  normalizeAmount, ORDER_STATUSES, MAX_CUSTOM_TASKS,
+  subscribeMindsets, createMindset, updateMindset, deleteMindset,
+  normalizeAmount, ORDER_STATUSES, MAX_CUSTOM_TASKS, MAX_CUSTOM_MINDSETS,
 } from './store';
+import { BUILTIN_MINDSETS } from './mindsets';
 import { STAGES, stageName, BUILTIN_TASKS } from './steps';
 import {
   evaluateAutoRules, buildTaskViews, nextMoveCandidates, stageStats, currentStage,
   wonAmountByMonth, monthKey, isWon,
 } from './progress';
-import { AutoRule, CustomTask, Order, OrderData, OrderStatus, Progress, StageId, TaskView } from './types';
+import {
+  AutoRule, CustomMindset, CustomTask, MindsetView, Order, OrderData, OrderStatus, Progress, StageId, TaskView,
+} from './types';
 
 // ============================================================
 // Icons（開発者定義の固定SVGのみ）
@@ -26,6 +30,7 @@ const ICON_AUTO = svg('<path d="M12 22 H44 L36 14"/><path d="M52 42 H20 L28 50"/
 const ICON_MEMO = svg('<path d="M14 10 H42 L50 18 V54 H14 Z"/><path d="M22 28 H42"/><path d="M22 38 H42"/>', 13);
 const ICON_PIECE = svg('<circle cx="32" cy="20" r="9"/><path d="M24 30 L18 52 H46 L40 30"/>', 18);
 const ICON_CHEVRON = svg('<path d="M24 14 L42 32 L24 50"/>', 14);
+const ICON_EDIT = svg('<path d="M42 12 L52 22 L24 50 H14 V40 Z"/><path d="M36 18 L46 28"/>', 14);
 
 // ============================================================
 // DOM refs
@@ -44,6 +49,7 @@ const tabBtns = Array.from(document.querySelectorAll<HTMLButtonElement>('.tabs__
 const loadingEl = $('loading');
 const panelBoard = $('panel-board');
 const panelOrders = $('panel-orders');
+const panelMindsets = $('panel-mindsets');
 
 const nextMoveEl = $('next-move');
 const nextStage = $('next-stage');
@@ -60,6 +66,24 @@ const overallCount = $('overall-count');
 const overallBar = $('overall-bar');
 const boardEl = $('board');
 const stageListEl = $('stage-list');
+const todayMindset = $('today-mindset');
+const todayTitle = $('today-title');
+const todayBody = $('today-body');
+const btnTodayNext = $<HTMLButtonElement>('btn-today-next');
+const btnTodayAll = $<HTMLButtonElement>('btn-today-all');
+
+const mindsetCount = $('mindset-count');
+const btnNewMindset = $<HTMLButtonElement>('btn-new-mindset');
+const mindsetList = $('mindset-list');
+const mindsetOverlay = $('mindset-overlay');
+const mindsetForm = $<HTMLFormElement>('mindset-form');
+const mindsetModalTitle = $('mindset-modal-title');
+const inputMindsetTitle = $<HTMLInputElement>('input-mindset-title');
+const inputMindsetBody = $<HTMLTextAreaElement>('input-mindset-body');
+const btnMindsetClose = $<HTMLButtonElement>('btn-mindset-close');
+const btnMindsetCancel = $<HTMLButtonElement>('btn-mindset-cancel');
+const btnMindsetSave = $<HTMLButtonElement>('btn-mindset-save');
+const btnMindsetDelete = $<HTMLButtonElement>('btn-mindset-delete');
 
 const statMonthWon = $('stat-month-won');
 const statMonthPaid = $('stat-month-paid');
@@ -136,7 +160,9 @@ const btnFeedbackSend = $<HTMLButtonElement>('btn-feedback-send');
 // ============================================================
 // State
 // ============================================================
-type Tab = 'board' | 'orders';
+type Tab = 'board' | 'orders' | 'mindsets';
+const TABS: Tab[] = ['board', 'orders', 'mindsets'];
+const parseTab = (v: string | null | undefined): Tab => (TABS.includes(v as Tab) ? (v as Tab) : 'board');
 type StatusFilter = OrderStatus | 'all';
 
 const TAB_STORAGE_KEY = 'kigyo-sugoroku:tab';
@@ -166,7 +192,8 @@ interface State {
   progress: Map<string, Progress>;
   custom: CustomTask[];
   orders: Order[];
-  loaded: { progress: boolean; custom: boolean; orders: boolean };
+  mindsets: CustomMindset[];
+  loaded: { progress: boolean; custom: boolean; orders: boolean; mindsets: boolean };
   views: TaskView[];
   tab: Tab;
   /** 「別のやることを見る」で何番目の候補を見ているか */
@@ -177,6 +204,9 @@ interface State {
   statusFilter: StatusFilter;
   editingTaskKey: string | null;
   editingOrderId: string | null;
+  editingMindsetId: string | null;
+  /** 「次の心構え」で今日の心構えから何件ずらしたか */
+  todayOffset: number;
   orderStatus: OrderStatus;
   busy: boolean;
 }
@@ -186,7 +216,8 @@ const state: State = {
   progress: new Map(),
   custom: [],
   orders: [],
-  loaded: { progress: false, custom: false, orders: false },
+  mindsets: [],
+  loaded: { progress: false, custom: false, orders: false, mindsets: false },
   views: [],
   tab: 'board',
   nextIndex: 0,
@@ -195,6 +226,8 @@ const state: State = {
   statusFilter: 'all',
   editingTaskKey: null,
   editingOrderId: null,
+  editingMindsetId: null,
+  todayOffset: 0,
   orderStatus: 'won',
   busy: false,
 };
@@ -233,7 +266,8 @@ function lsSet(key: string, value: string): void {
   }
 }
 
-const isLoaded = (): boolean => state.loaded.progress && state.loaded.custom && state.loaded.orders;
+const isLoaded = (): boolean =>
+  state.loaded.progress && state.loaded.custom && state.loaded.orders && state.loaded.mindsets;
 
 function stageOptions(select: HTMLSelectElement, selected: StageId): void {
   select.replaceChildren();
@@ -296,10 +330,11 @@ function setTab(tab: Tab): void {
   if (!isLoaded()) return;
   panelBoard.classList.toggle('hidden', tab !== 'board');
   panelOrders.classList.toggle('hidden', tab !== 'orders');
+  panelMindsets.classList.toggle('hidden', tab !== 'mindsets');
 }
 
 tabBtns.forEach((b) => b.addEventListener('click', () => {
-  setTab(b.dataset.tab === 'orders' ? 'orders' : 'board');
+  setTab(parseTab(b.dataset.tab));
   window.scrollTo({ top: 0 });
 }));
 
@@ -326,9 +361,11 @@ function render(): void {
   loadingEl.classList.add('hidden');
   setTab(state.tab);
   renderNextMove();
+  renderTodayMindset();
   renderBoard();
   renderStageList();
   renderOrders();
+  renderMindsets();
 }
 
 function renderNextMove(): void {
@@ -948,6 +985,138 @@ btnOrderDelete.addEventListener('click', async () => {
 });
 
 // ============================================================
+// 心構え
+// ============================================================
+function mindsetViews(): MindsetView[] {
+  return [
+    ...BUILTIN_MINDSETS.map((m) => ({ key: `b:${m.id}`, title: m.title, body: m.body, custom: false })),
+    ...state.mindsets.map((m) => ({ key: `c:${m.id}`, title: m.title, body: m.body, custom: true })),
+  ];
+}
+
+/** 日付ごとに切り替わる「今日の心構え」（ローカル日付の通し番号で選ぶ） */
+function renderTodayMindset(): void {
+  const list = mindsetViews();
+  if (!list.length) {
+    todayMindset.classList.add('hidden');
+    return;
+  }
+  const now = new Date();
+  const dayIndex = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86_400_000);
+  const m = list[(dayIndex + state.todayOffset) % list.length];
+  todayTitle.textContent = m.title;
+  todayBody.textContent = m.body;
+  todayBody.classList.toggle('hidden', !m.body);
+  btnTodayNext.classList.toggle('hidden', list.length < 2);
+  todayMindset.classList.remove('hidden');
+}
+
+btnTodayNext.addEventListener('click', () => {
+  state.todayOffset += 1;
+  renderTodayMindset();
+});
+btnTodayAll.addEventListener('click', () => {
+  setTab('mindsets');
+  window.scrollTo({ top: 0 });
+});
+
+function renderMindsets(): void {
+  const list = mindsetViews();
+  mindsetCount.textContent = `${list.length}個の心構え（うち自分で追加 ${state.mindsets.length}個）`;
+  mindsetList.replaceChildren();
+  list.forEach((m, i) => {
+    const li = document.createElement('li');
+    li.className = 'mindset card-surface';
+    if (m.custom) li.classList.add('is-custom');
+    li.appendChild(textEl('span', 'mindset__num', String(i + 1)));
+    const main = document.createElement('div');
+    main.className = 'mindset__main';
+    main.appendChild(textEl('h3', 'mindset__title', m.title));
+    if (m.body) main.appendChild(textEl('p', 'mindset__body', m.body));
+    if (m.custom) main.appendChild(textEl('span', 'tag', '自分で追加'));
+    li.appendChild(main);
+    if (m.custom) {
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.className = 'mindset__edit';
+      edit.setAttribute('aria-label', `「${m.title}」を編集`);
+      edit.appendChild(iconEl(ICON_EDIT));
+      edit.addEventListener('click', () => openMindset(m.key.slice(2)));
+      li.appendChild(edit);
+    }
+    mindsetList.appendChild(li);
+  });
+}
+
+function openMindset(id: string | null): void {
+  const m = id ? state.mindsets.find((x) => x.id === id) : undefined;
+  if (!m && state.mindsets.length >= MAX_CUSTOM_MINDSETS) {
+    showToast(`追加できるのは${MAX_CUSTOM_MINDSETS}個までです`);
+    return;
+  }
+  state.editingMindsetId = m ? m.id : null;
+  mindsetModalTitle.textContent = m ? '心構えを編集' : '心構えを追加';
+  inputMindsetTitle.value = m?.title || '';
+  inputMindsetBody.value = m?.body || '';
+  btnMindsetDelete.classList.toggle('hidden', !m);
+  btnMindsetSave.disabled = false;
+  openOverlay(mindsetOverlay);
+  inputMindsetTitle.focus();
+}
+
+function closeMindset(): void {
+  closeOverlay(mindsetOverlay);
+  state.editingMindsetId = null;
+}
+
+btnNewMindset.addEventListener('click', () => openMindset(null));
+btnMindsetClose.addEventListener('click', closeMindset);
+btnMindsetCancel.addEventListener('click', closeMindset);
+
+mindsetForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!state.uid || state.busy) return;
+  const title = inputMindsetTitle.value.trim();
+  if (!title) {
+    showToast('ひとことを入力してください');
+    inputMindsetTitle.focus();
+    return;
+  }
+  const id = state.editingMindsetId;
+  state.busy = true;
+  btnMindsetSave.disabled = true;
+  try {
+    if (id) await updateMindset(state.uid, id, title, inputMindsetBody.value);
+    else await createMindset(state.uid, title, inputMindsetBody.value);
+    showToast(id ? '保存しました' : '心構えを追加しました');
+    closeMindset();
+  } catch (err) {
+    handleError(err, '保存できませんでした。通信状況を確認してください。');
+  } finally {
+    state.busy = false;
+    btnMindsetSave.disabled = false;
+  }
+});
+
+btnMindsetDelete.addEventListener('click', async () => {
+  const id = state.editingMindsetId;
+  const m = id ? state.mindsets.find((x) => x.id === id) : undefined;
+  if (!state.uid || !m) return;
+  const ok = await askConfirm('この心構えを削除しますか？', `「${m.title}」を削除します。元に戻せません。`);
+  if (!ok || !state.uid || state.busy) return;
+  state.busy = true;
+  try {
+    await deleteMindset(state.uid, m.id);
+    closeMindset();
+    showToast('削除しました');
+  } catch (err) {
+    handleError(err, '削除できませんでした。通信状況を確認してください。');
+  } finally {
+    state.busy = false;
+  }
+});
+
+// ============================================================
 // お祝い
 // ============================================================
 function showCelebrate(titles: string[]): void {
@@ -996,6 +1165,7 @@ const closers: [HTMLElement, () => void][] = [
   [taskOverlay, closeTask],
   [addTaskOverlay, closeAddTask],
   [orderOverlay, closeOrder],
+  [mindsetOverlay, closeMindset],
   [feedbackOverlay, () => closeOverlay(feedbackOverlay)],
   [celebrateOverlay, () => closeOverlay(celebrateOverlay)],
   [confirmOverlay, () => settleConfirm(false)],
@@ -1051,7 +1221,9 @@ function resetState(): void {
   state.progress = new Map();
   state.custom = [];
   state.orders = [];
-  state.loaded = { progress: false, custom: false, orders: false };
+  state.mindsets = [];
+  state.loaded = { progress: false, custom: false, orders: false, mindsets: false };
+  state.todayOffset = 0;
   state.views = [];
   state.nextIndex = 0;
   state.prevAuto = null;
@@ -1083,6 +1255,11 @@ function startSync(uid: string): void {
     recompute();
     render();
   }, onDataError));
+  unsubscribers.push(subscribeMindsets(uid, (list) => {
+    state.mindsets = list;
+    state.loaded.mindsets = true;
+    render();
+  }, onDataError));
 }
 
 onAuthChange((user: User | null) => {
@@ -1104,7 +1281,8 @@ onAuthChange((user: User | null) => {
   loadingEl.classList.remove('hidden');
   panelBoard.classList.add('hidden');
   panelOrders.classList.add('hidden');
-  state.tab = lsGet(TAB_STORAGE_KEY) === 'orders' ? 'orders' : 'board';
+  panelMindsets.classList.add('hidden');
+  state.tab = parseTab(lsGet(TAB_STORAGE_KEY));
   setTab(state.tab);
   startSync(user.uid);
 });
