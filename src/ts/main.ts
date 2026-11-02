@@ -19,6 +19,9 @@ import {
 import {
   AutoRule, CustomMindset, CustomTask, MindsetView, MyWhy, Order, OrderData, OrderStatus, Progress, StageId, TaskView,
 } from './types';
+import { initClickTracking } from './analytics';
+
+initClickTracking();
 
 // ============================================================
 // Icons（開発者定義の固定SVGのみ）
