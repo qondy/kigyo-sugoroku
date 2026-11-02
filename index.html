@@ -15,7 +15,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#f39c12">
   <title>起業すごろく</title>
-  <meta name="description" content="受注しながら起業するための道しるべ。準備→初受注→継続受注→独立・開業→仕組み化の5段階を、すごろくのように1マスずつ進めます。いまやるべき「次の一手」と、受注ログで売上もわかります。起業の心構えと「わたしのWHY」もいつでも読み返せます。">
+  <meta name="description" content="受注しながら起業するための道しるべ。準備→初受注→継続受注→独立・開業→仕組み化の5段階を、すごろくのように1マスずつ進めます。いまやるべき「次の一手」と、受注ログで売上もわかります。起業の心構えと「わたしのWHY」とMVVもいつでも読み返せます。">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -310,6 +310,14 @@
         <button type="button" id="btn-why-close" class="modal__close" aria-label="閉じる">&times;</button>
       </div>
       <p class="modal__lead">何を（WHAT）・どうやるか（HOW）はAIでも決められます。でも「なぜやるのか（WHY）」を決められるのは、あなただけです。目的や理由を、自分の言葉にしてみましょう。</p>
+      <div class="golden-circle">
+        <svg class="golden-circle__figure" width="88" height="88" viewBox="0 0 88 88" aria-hidden="true"><circle cx="44" cy="44" r="41" fill="none" stroke="currentColor" stroke-width="2" opacity="0.35"/><circle cx="44" cy="44" r="28" fill="none" stroke="currentColor" stroke-width="2" opacity="0.6"/><circle cx="44" cy="44" r="15" fill="currentColor"/><text x="44" y="48" text-anchor="middle" font-size="10" font-weight="800" fill="#fff">WHY</text><text x="44" y="26" text-anchor="middle" font-size="8" font-weight="700" fill="currentColor">HOW</text><text x="44" y="11" text-anchor="middle" font-size="8" font-weight="700" fill="currentColor">WHAT</text></svg>
+        <dl class="golden-circle__list">
+          <div><dt>WHY</dt><dd>なぜやるのか（存在理由・根っこの信念）</dd></div>
+          <div><dt>HOW</dt><dd>どうやるか</dd></div>
+          <div><dt>WHAT</dt><dd>何をするか</dd></div>
+        </dl>
+      </div>
       <div class="why-hints">
         <span class="why-hints__label">考えるヒント</span>
         <ul>
@@ -327,6 +335,22 @@
         <label class="field__label" for="input-why-detail">くわしく<span class="field__hint">任意・きっかけや思い</span></label>
         <textarea id="input-why-detail" rows="5" maxlength="1000" placeholder="例：実家の商店が、ホームページがないだけで選ばれなくなっていくのを見てきた。良いものを作っている人が、ちゃんと見つけてもらえるようにしたい。"></textarea>
       </div>
+      <details class="mvv-section" id="mvv-details">
+        <summary class="mvv-section__summary">MVVに整理する<span class="field__hint">任意</span></summary>
+        <p class="mvv-section__lead">MVVは、WHYを仲間やお客さんにも伝わる形に整理した型です。3つとも書くと、すごろくの「MVVに整理する」マスに進みます。</p>
+        <div class="field">
+          <label class="field__label" for="input-mission">ミッション<span class="field__hint">何のために存在するか（WHYにいちばん近い）</span></label>
+          <input type="text" id="input-mission" maxlength="100" placeholder="例：良いものを作る小さなお店が、ちゃんと見つけてもらえる世の中にする" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label class="field__label" for="input-vision">ビジョン<span class="field__hint">目指す未来の姿（WHERE）</span></label>
+          <input type="text" id="input-vision" maxlength="100" placeholder="例：地元のお店が、ネットでも選ばれる街" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label class="field__label" for="input-values">バリュー<span class="field__hint">大事にする行動の基準（HOWの指針）・1行に1つ、5つまで</span></label>
+          <textarea id="input-values" rows="4" maxlength="250" placeholder="例：&#10;相手の「なぜ」を先に聞く&#10;約束した期日を守る&#10;作ったあとも伴走する"></textarea>
+        </div>
+      </details>
       <div class="modal__actions">
         <button type="button" id="btn-why-cancel" class="btn btn--ghost">キャンセル</button>
         <button type="submit" id="btn-why-save" class="btn btn--primary">保存する</button>

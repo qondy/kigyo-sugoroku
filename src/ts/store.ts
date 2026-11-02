@@ -3,7 +3,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { BUILTIN_IDS } from './steps';
-import { CustomMindset, CustomTask, MyWhy, Order, OrderData, OrderStatus, Progress, StageId } from './types';
+import { CustomMindset, CustomTask, MyWhy, MyWhyData, Order, OrderData, OrderStatus, Progress, StageId } from './types';
 
 export const MAX_TASK_TITLE = 60;
 export const MAX_MEMO = 1000;
@@ -16,6 +16,22 @@ export const MAX_MINDSET_BODY = 500;
 export const MAX_CUSTOM_MINDSETS = 100;
 export const MAX_WHY = 80;
 export const MAX_WHY_DETAIL = 1000;
+export const MAX_MISSION = 100;
+export const MAX_VISION = 100;
+export const MAX_VALUES = 5;
+export const MAX_VALUE_LEN = 40;
+
+/** 「1行に1つ」などの入力をバリューの配列に正規化する */
+export function parseValues(input: string | unknown[]): string[] {
+  const raw = Array.isArray(input) ? input : input.split(/\n/);
+  const out: string[] = [];
+  raw.forEach((v) => {
+    if (typeof v !== 'string') return;
+    const t = v.trim().replace(/^[-・*●]\s*/, '').slice(0, MAX_VALUE_LEN);
+    if (t && !out.includes(t) && out.length < MAX_VALUES) out.push(t);
+  });
+  return out;
+}
 
 export const ORDER_STATUSES: OrderStatus[] = ['lead', 'won', 'delivered', 'paid', 'lost'];
 
@@ -239,14 +255,24 @@ export function subscribeWhy(
   return onSnapshot(whyDoc(uid), (snap) => {
     const data = snap.data();
     const why = data ? str(data.why, MAX_WHY).trim() : '';
-    onData(why ? { why, detail: str(data?.detail, MAX_WHY_DETAIL), updatedAt: msOrZero(data?.updatedAt) } : null);
+    onData(why ? {
+      why,
+      detail: str(data?.detail, MAX_WHY_DETAIL),
+      mission: str(data?.mission, MAX_MISSION).trim(),
+      vision: str(data?.vision, MAX_VISION).trim(),
+      values: parseValues(Array.isArray(data?.values) ? data?.values : []),
+      updatedAt: msOrZero(data?.updatedAt),
+    } : null);
   }, onError);
 }
 
-export function saveWhy(uid: string, why: string, detail: string): Promise<void> {
+export function saveWhy(uid: string, data: MyWhyData): Promise<void> {
   return setDoc(whyDoc(uid), {
-    why: why.trim().slice(0, MAX_WHY),
-    detail: detail.trim().slice(0, MAX_WHY_DETAIL),
+    why: data.why.trim().slice(0, MAX_WHY),
+    detail: data.detail.trim().slice(0, MAX_WHY_DETAIL),
+    mission: data.mission.trim().slice(0, MAX_MISSION),
+    vision: data.vision.trim().slice(0, MAX_VISION),
+    values: parseValues(data.values),
     updatedAt: Date.now(),
   });
 }

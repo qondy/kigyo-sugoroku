@@ -1,5 +1,5 @@
 import { BUILTIN_TASKS, STAGES } from './steps';
-import { AutoRule, CustomTask, Order, OrderStatus, Progress, StageId, TaskView } from './types';
+import { AutoRule, CustomTask, MyWhy, Order, OrderStatus, Progress, StageId, TaskView } from './types';
 
 /** 「受注」以上とみなす状態 */
 const WON_STATUSES: OrderStatus[] = ['won', 'delivered', 'paid'];
@@ -18,10 +18,11 @@ export function wonAmountByMonth(orders: Order[]): Map<string, number> {
 }
 
 /** 受注ログ（と「わたしのWHY」）から、自動判定のマイルストーンを達成しているか調べる */
-export function evaluateAutoRules(orders: Order[], hasWhy: boolean): Set<AutoRule> {
+export function evaluateAutoRules(orders: Order[], why: MyWhy | null): Set<AutoRule> {
   const won = orders.filter(isWon);
   const done = new Set<AutoRule>();
-  if (hasWhy) done.add('why-written');
+  if (why) done.add('why-written');
+  if (why && why.mission && why.vision && why.values.length) done.add('mvv-written');
   if (won.length >= 1) done.add('first-won');
   if (orders.some((o) => o.status === 'delivered' || o.status === 'paid')) done.add('first-delivered');
   if (orders.some((o) => o.status === 'paid')) done.add('first-paid');
@@ -91,8 +92,9 @@ export function currentStage(views: TaskView[]): StageId | null {
   return t ? t.stage : null;
 }
 
-/** 受注ログの記録を待つ自動判定マスか（WHYは自分で書けば進むので含めない） */
-const waitsForOrders = (v: TaskView): boolean => !!v.auto && v.auto !== 'why-written';
+/** 受注ログの記録を待つ自動判定マスか（WHY・MVVは自分で書けば進むので含めない） */
+const waitsForOrders = (v: TaskView): boolean =>
+  !!v.auto && v.auto !== 'why-written' && v.auto !== 'mvv-written';
 
 /**
  * 「次の一手」の候補を優先順に並べる。

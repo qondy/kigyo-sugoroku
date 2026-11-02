@@ -3,6 +3,7 @@ export type StageId = 1 | 2 | 3 | 4 | 5;
 /** 受注ログから自動で判定するマイルストーン */
 export type AutoRule =
   | 'why-written'
+  | 'mvv-written'
   | 'first-won'
   | 'first-delivered'
   | 'first-paid'
@@ -95,9 +96,17 @@ export interface MindsetView {
   custom: boolean;
 }
 
-/** わたしのWHY（users/{uid}/profile/why）。なぜ起業するのか・なぜこの事業をやるのか */
+/**
+ * わたしのWHY（users/{uid}/profile/why）。なぜ起業するのか・なぜこの事業をやるのか。
+ * mission / vision / values は、そのWHYを組織向けに整理したMVV（任意）
+ */
 export interface MyWhy {
   why: string;
   detail: string;
+  mission: string;
+  vision: string;
+  values: string[];
   updatedAt: number;
 }
+
+export type MyWhyData = Omit<MyWhy, 'updatedAt'>;

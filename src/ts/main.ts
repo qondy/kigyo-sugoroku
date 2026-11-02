@@ -7,7 +7,7 @@ import {
   subscribeCustomTasks, createCustomTask, updateCustomTask, deleteCustomTask,
   subscribeOrders, createOrder, updateOrder, setOrderStatus, deleteOrder,
   subscribeMindsets, createMindset, updateMindset, deleteMindset,
-  subscribeWhy, saveWhy,
+  subscribeWhy, saveWhy, parseValues, MAX_VALUES,
   normalizeAmount, ORDER_STATUSES, MAX_CUSTOM_TASKS, MAX_CUSTOM_MINDSETS,
 } from './store';
 import { BUILTIN_MINDSETS } from './mindsets';
@@ -91,6 +91,10 @@ const whyOverlay = $('why-overlay');
 const whyForm = $<HTMLFormElement>('why-form');
 const inputWhy = $<HTMLInputElement>('input-why');
 const inputWhyDetail = $<HTMLTextAreaElement>('input-why-detail');
+const mvvDetails = $<HTMLDetailsElement>('mvv-details');
+const inputMission = $<HTMLInputElement>('input-mission');
+const inputVision = $<HTMLInputElement>('input-vision');
+const inputValues = $<HTMLTextAreaElement>('input-values');
 const btnWhyClose = $<HTMLButtonElement>('btn-why-close');
 const btnWhyCancel = $<HTMLButtonElement>('btn-why-cancel');
 const btnWhySave = $<HTMLButtonElement>('btn-why-save');
@@ -188,6 +192,7 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 
 const AUTO_LABEL: Record<AutoRule, string> = {
   'why-written': '「わたしのWHY」を書く',
+  'mvv-written': 'ミッション・ビジョン・バリューを3つとも書く',
   'first-won': '受注ログに「受注」以上の案件が1件',
   'first-delivered': '受注ログに「納品済」以上の案件が1件',
   'first-paid': '受注ログに「入金済」の案件が1件',
@@ -355,7 +360,7 @@ tabBtns.forEach((b) => b.addEventListener('click', () => {
 // Render: すごろく
 // ============================================================
 function recompute(): void {
-  const autoDone = evaluateAutoRules(state.orders, !!state.why);
+  const autoDone = evaluateAutoRules(state.orders, state.why);
   state.views = buildTaskViews(state.progress, state.custom, autoDone);
 
   // 受注ログやWHYの変化で新しくマスが進んだらお祝いする（初回読み込み時は除く）
@@ -402,7 +407,8 @@ function renderNextMove(): void {
   nextHowWrap.classList.toggle('hidden', !t.how);
   btnNextDone.classList.toggle('hidden', !!t.auto);
   btnNextOrder.classList.toggle('hidden', !t.auto);
-  btnNextOrder.textContent = t.auto === 'why-written' ? 'WHYを言葉にする' : '受注ログに記録する';
+  btnNextOrder.textContent = t.auto === 'why-written' ? 'WHYを言葉にする'
+    : t.auto === 'mvv-written' ? 'MVVを書く' : '受注ログに記録する';
   btnNextOrder.dataset.rule = t.auto || '';
   btnNextOther.classList.toggle('hidden', candidates.length < 2);
   btnNextDone.dataset.key = t.key;
@@ -613,6 +619,10 @@ function openTask(key: string): void {
       taskAuto.textContent = v.autoDone
         ? '「わたしのWHY」を書いたので達成しました。すごろく画面のいちばん上からいつでも書き直せます。'
         : 'すごろく画面のいちばん上にある「わたしのWHY」を書くと、自動で達成します。';
+    } else if (v.auto === 'mvv-written') {
+      taskAuto.textContent = v.autoDone
+        ? 'ミッション・ビジョン・バリューを書いたので達成しました。「わたしのWHY」の「書き直す」からいつでも見直せます。'
+        : '「わたしのWHY」の「MVVに整理する」で、ミッション・ビジョン・バリューを3つとも書くと自動で達成します。';
     } else {
       taskAuto.textContent = v.autoDone
         ? `受注ログから自動で達成しました（${AUTO_LABEL[v.auto]}）。`
@@ -758,8 +768,9 @@ btnNextOther.addEventListener('click', () => {
   renderBoard();
 });
 btnNextOrder.addEventListener('click', () => {
-  if (btnNextOrder.dataset.rule === 'why-written') {
-    openWhy();
+  const rule = btnNextOrder.dataset.rule;
+  if (rule === 'why-written' || rule === 'mvv-written') {
+    openWhy(rule === 'mvv-written');
     return;
   }
   setTab('orders');
@@ -1164,29 +1175,80 @@ function renderWhy(): void {
     const label = iconEl(ICON_COMPASS, 'why-card__label');
     label.appendChild(document.createTextNode('わたしのWHY'));
     head.appendChild(label);
-    if (state.why) head.appendChild(button('書き直す', 'link-btn', openWhy));
+    if (state.why) head.appendChild(button('書き直す', 'link-btn', () => openWhy()));
     card.appendChild(head);
 
     if (state.why) {
       card.appendChild(textEl('p', 'why-card__why', state.why.why));
       if (state.why.detail) card.appendChild(textEl('p', 'why-card__detail', state.why.detail));
+      card.appendChild(renderMvv(state.why));
       const updated = formatUpdated(state.why.updatedAt);
       if (updated) card.appendChild(textEl('p', 'why-card__updated', updated));
     } else {
       card.appendChild(textEl('p', 'why-card__question', 'あなたは、なぜ起業するのですか？'));
       card.appendChild(textEl('p', 'why-card__lead',
         '何を（WHAT）・どうやるか（HOW）はAIでも決められます。でも「なぜやるのか（WHY）」を決められるのは、あなただけです。'));
-      card.appendChild(button('WHYを言葉にする', 'btn btn--primary', openWhy));
+      card.appendChild(button('WHYを言葉にする', 'btn btn--primary', () => openWhy()));
     }
   });
 }
 
-function openWhy(): void {
+const MVV_ROWS: { key: 'mission' | 'vision'; en: string; ja: string }[] = [
+  { key: 'mission', en: 'MISSION', ja: 'ミッション' },
+  { key: 'vision', en: 'VISION', ja: 'ビジョン' },
+];
+
+/** WHYを組織向けに整理したMVV。未記入なら整理をうながすボタンを返す */
+function renderMvv(why: MyWhy): HTMLElement {
+  const hasMvv = !!(why.mission || why.vision || why.values.length);
+  if (!hasMvv) {
+    const b = button('＋ WHYをMVV（ミッション・ビジョン・バリュー）に整理する', 'why-card__mvv-cta', () => openWhy(true));
+    return b;
+  }
+  const box = document.createElement('dl');
+  box.className = 'mvv';
+  const row = (en: string, ja: string, content: HTMLElement): void => {
+    const r = document.createElement('div');
+    r.className = 'mvv__row';
+    const dt = document.createElement('dt');
+    dt.className = 'mvv__label';
+    dt.appendChild(textEl('span', 'mvv__en', en));
+    dt.appendChild(textEl('span', 'mvv__ja', ja));
+    const dd = document.createElement('dd');
+    dd.className = 'mvv__body';
+    dd.appendChild(content);
+    r.appendChild(dt);
+    r.appendChild(dd);
+    box.appendChild(r);
+  };
+  MVV_ROWS.forEach((m) => {
+    if (why[m.key]) row(m.en, m.ja, textEl('span', '', why[m.key]));
+  });
+  if (why.values.length) {
+    const list = document.createElement('ul');
+    list.className = 'mvv__values';
+    why.values.forEach((v) => list.appendChild(textEl('li', '', v)));
+    row('VALUE', 'バリュー', list);
+  }
+  return box;
+}
+
+function openWhy(focusMvv = false): void {
   inputWhy.value = state.why?.why || '';
   inputWhyDetail.value = state.why?.detail || '';
+  inputMission.value = state.why?.mission || '';
+  inputVision.value = state.why?.vision || '';
+  inputValues.value = (state.why?.values || []).join('\n');
+  const hasMvv = !!(state.why && (state.why.mission || state.why.vision || state.why.values.length));
+  mvvDetails.open = hasMvv || focusMvv;
   btnWhySave.disabled = false;
   openOverlay(whyOverlay);
-  inputWhy.focus();
+  if (focusMvv && state.why) {
+    inputMission.focus();
+    mvvDetails.scrollIntoView({ block: 'start' });
+  } else {
+    inputWhy.focus();
+  }
 }
 
 const closeWhy = (): void => closeOverlay(whyOverlay);
@@ -1202,13 +1264,21 @@ whyForm.addEventListener('submit', async (e) => {
     inputWhy.focus();
     return;
   }
+  const valueLines = inputValues.value.split('\n').filter((v) => v.trim()).length;
   const isFirst = !state.why;
   state.busy = true;
   btnWhySave.disabled = true;
   try {
-    await saveWhy(state.uid, why, inputWhyDetail.value);
+    await saveWhy(state.uid, {
+      why,
+      detail: inputWhyDetail.value,
+      mission: inputMission.value,
+      vision: inputVision.value,
+      values: parseValues(inputValues.value),
+    });
     closeWhy();
-    if (!isFirst) showToast('WHYを書き直しました');
+    if (valueLines > MAX_VALUES) showToast(`バリューは最初の${MAX_VALUES}つを保存しました`);
+    else if (!isFirst) showToast('保存しました');
   } catch (err) {
     handleError(err, '保存できませんでした。通信状況を確認してください。');
   } finally {
