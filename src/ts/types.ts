@@ -2,6 +2,7 @@ export type StageId = 1 | 2 | 3 | 4 | 5;
 
 /** 受注ログから自動で判定するマイルストーン */
 export type AutoRule =
+  | 'why-written'
   | 'first-won'
   | 'first-delivered'
   | 'first-paid'
@@ -92,4 +93,11 @@ export interface MindsetView {
   title: string;
   body: string;
   custom: boolean;
+}
+
+/** わたしのWHY（users/{uid}/profile/why）。なぜ起業するのか・なぜこの事業をやるのか */
+export interface MyWhy {
+  why: string;
+  detail: string;
+  updatedAt: number;
 }

@@ -7,6 +7,7 @@ import {
   subscribeCustomTasks, createCustomTask, updateCustomTask, deleteCustomTask,
   subscribeOrders, createOrder, updateOrder, setOrderStatus, deleteOrder,
   subscribeMindsets, createMindset, updateMindset, deleteMindset,
+  subscribeWhy, saveWhy,
   normalizeAmount, ORDER_STATUSES, MAX_CUSTOM_TASKS, MAX_CUSTOM_MINDSETS,
 } from './store';
 import { BUILTIN_MINDSETS } from './mindsets';
@@ -16,7 +17,7 @@ import {
   wonAmountByMonth, monthKey, isWon,
 } from './progress';
 import {
-  AutoRule, CustomMindset, CustomTask, MindsetView, Order, OrderData, OrderStatus, Progress, StageId, TaskView,
+  AutoRule, CustomMindset, CustomTask, MindsetView, MyWhy, Order, OrderData, OrderStatus, Progress, StageId, TaskView,
 } from './types';
 
 // ============================================================
@@ -84,6 +85,15 @@ const btnMindsetClose = $<HTMLButtonElement>('btn-mindset-close');
 const btnMindsetCancel = $<HTMLButtonElement>('btn-mindset-cancel');
 const btnMindsetSave = $<HTMLButtonElement>('btn-mindset-save');
 const btnMindsetDelete = $<HTMLButtonElement>('btn-mindset-delete');
+
+const whyCards = [$('why-card-board'), $('why-card-mindsets')];
+const whyOverlay = $('why-overlay');
+const whyForm = $<HTMLFormElement>('why-form');
+const inputWhy = $<HTMLInputElement>('input-why');
+const inputWhyDetail = $<HTMLTextAreaElement>('input-why-detail');
+const btnWhyClose = $<HTMLButtonElement>('btn-why-close');
+const btnWhyCancel = $<HTMLButtonElement>('btn-why-cancel');
+const btnWhySave = $<HTMLButtonElement>('btn-why-save');
 
 const statMonthWon = $('stat-month-won');
 const statMonthPaid = $('stat-month-paid');
@@ -177,6 +187,7 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 };
 
 const AUTO_LABEL: Record<AutoRule, string> = {
+  'why-written': '「わたしのWHY」を書く',
   'first-won': '受注ログに「受注」以上の案件が1件',
   'first-delivered': '受注ログに「納品済」以上の案件が1件',
   'first-paid': '受注ログに「入金済」の案件が1件',
@@ -193,7 +204,8 @@ interface State {
   custom: CustomTask[];
   orders: Order[];
   mindsets: CustomMindset[];
-  loaded: { progress: boolean; custom: boolean; orders: boolean; mindsets: boolean };
+  why: MyWhy | null;
+  loaded: { progress: boolean; custom: boolean; orders: boolean; mindsets: boolean; why: boolean };
   views: TaskView[];
   tab: Tab;
   /** 「別のやることを見る」で何番目の候補を見ているか */
@@ -217,7 +229,8 @@ const state: State = {
   custom: [],
   orders: [],
   mindsets: [],
-  loaded: { progress: false, custom: false, orders: false, mindsets: false },
+  why: null,
+  loaded: { progress: false, custom: false, orders: false, mindsets: false, why: false },
   views: [],
   tab: 'board',
   nextIndex: 0,
@@ -267,7 +280,7 @@ function lsSet(key: string, value: string): void {
 }
 
 const isLoaded = (): boolean =>
-  state.loaded.progress && state.loaded.custom && state.loaded.orders && state.loaded.mindsets;
+  state.loaded.progress && state.loaded.custom && state.loaded.orders && state.loaded.mindsets && state.loaded.why;
 
 function stageOptions(select: HTMLSelectElement, selected: StageId): void {
   select.replaceChildren();
@@ -342,11 +355,11 @@ tabBtns.forEach((b) => b.addEventListener('click', () => {
 // Render: すごろく
 // ============================================================
 function recompute(): void {
-  const autoDone = evaluateAutoRules(state.orders);
+  const autoDone = evaluateAutoRules(state.orders, !!state.why);
   state.views = buildTaskViews(state.progress, state.custom, autoDone);
 
-  // 受注ログの変化で新しくマスが進んだらお祝いする（初回読み込み時は除く）
-  if (state.loaded.orders) {
+  // 受注ログやWHYの変化で新しくマスが進んだらお祝いする（初回読み込み時は除く）
+  if (isLoaded()) {
     if (state.prevAuto) {
       const prev = state.prevAuto;
       const newly = BUILTIN_TASKS.filter((t) => t.auto && autoDone.has(t.auto) && !prev.has(t.auto));
@@ -360,6 +373,7 @@ function render(): void {
   if (!isLoaded()) return;
   loadingEl.classList.add('hidden');
   setTab(state.tab);
+  renderWhy();
   renderNextMove();
   renderTodayMindset();
   renderBoard();
@@ -388,6 +402,8 @@ function renderNextMove(): void {
   nextHowWrap.classList.toggle('hidden', !t.how);
   btnNextDone.classList.toggle('hidden', !!t.auto);
   btnNextOrder.classList.toggle('hidden', !t.auto);
+  btnNextOrder.textContent = t.auto === 'why-written' ? 'WHYを言葉にする' : '受注ログに記録する';
+  btnNextOrder.dataset.rule = t.auto || '';
   btnNextOther.classList.toggle('hidden', candidates.length < 2);
   btnNextDone.dataset.key = t.key;
   btnNextDetail.dataset.key = t.key;
@@ -593,9 +609,15 @@ function openTask(key: string): void {
   taskHowWrap.classList.toggle('hidden', !v.how);
 
   if (v.auto) {
-    taskAuto.textContent = v.autoDone
-      ? `受注ログから自動で達成しました（${AUTO_LABEL[v.auto]}）。`
-      : `受注ログに記録すると自動で達成します（${AUTO_LABEL[v.auto]}）。このアプリを使う前に達成済みなら、下のチェックで完了にできます。`;
+    if (v.auto === 'why-written') {
+      taskAuto.textContent = v.autoDone
+        ? '「わたしのWHY」を書いたので達成しました。すごろく画面のいちばん上からいつでも書き直せます。'
+        : 'すごろく画面のいちばん上にある「わたしのWHY」を書くと、自動で達成します。';
+    } else {
+      taskAuto.textContent = v.autoDone
+        ? `受注ログから自動で達成しました（${AUTO_LABEL[v.auto]}）。`
+        : `受注ログに記録すると自動で達成します（${AUTO_LABEL[v.auto]}）。このアプリを使う前に達成済みなら、下のチェックで完了にできます。`;
+    }
     taskAuto.classList.remove('hidden');
   } else {
     taskAuto.classList.add('hidden');
@@ -736,6 +758,10 @@ btnNextOther.addEventListener('click', () => {
   renderBoard();
 });
 btnNextOrder.addEventListener('click', () => {
+  if (btnNextOrder.dataset.rule === 'why-written') {
+    openWhy();
+    return;
+  }
   setTab('orders');
   openOrder(null);
 });
@@ -1117,6 +1143,81 @@ btnMindsetDelete.addEventListener('click', async () => {
 });
 
 // ============================================================
+// わたしのWHY
+// ============================================================
+const ICON_COMPASS = svg('<circle cx="32" cy="32" r="22"/><path d="M40 24 L35 35 L24 40 L29 29 Z"/>', 16);
+
+function formatUpdated(ms: number): string {
+  if (!ms) return '';
+  const d = new Date(ms);
+  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} 更新`;
+}
+
+/** すごろく・心構えの両タブの上部に同じ「わたしのWHY」カードを描く */
+function renderWhy(): void {
+  whyCards.forEach((card) => {
+    card.replaceChildren();
+    card.classList.toggle('is-empty', !state.why);
+
+    const head = document.createElement('div');
+    head.className = 'why-card__head';
+    const label = iconEl(ICON_COMPASS, 'why-card__label');
+    label.appendChild(document.createTextNode('わたしのWHY'));
+    head.appendChild(label);
+    if (state.why) head.appendChild(button('書き直す', 'link-btn', openWhy));
+    card.appendChild(head);
+
+    if (state.why) {
+      card.appendChild(textEl('p', 'why-card__why', state.why.why));
+      if (state.why.detail) card.appendChild(textEl('p', 'why-card__detail', state.why.detail));
+      const updated = formatUpdated(state.why.updatedAt);
+      if (updated) card.appendChild(textEl('p', 'why-card__updated', updated));
+    } else {
+      card.appendChild(textEl('p', 'why-card__question', 'あなたは、なぜ起業するのですか？'));
+      card.appendChild(textEl('p', 'why-card__lead',
+        '何を（WHAT）・どうやるか（HOW）はAIでも決められます。でも「なぜやるのか（WHY）」を決められるのは、あなただけです。'));
+      card.appendChild(button('WHYを言葉にする', 'btn btn--primary', openWhy));
+    }
+  });
+}
+
+function openWhy(): void {
+  inputWhy.value = state.why?.why || '';
+  inputWhyDetail.value = state.why?.detail || '';
+  btnWhySave.disabled = false;
+  openOverlay(whyOverlay);
+  inputWhy.focus();
+}
+
+const closeWhy = (): void => closeOverlay(whyOverlay);
+btnWhyClose.addEventListener('click', closeWhy);
+btnWhyCancel.addEventListener('click', closeWhy);
+
+whyForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!state.uid || state.busy) return;
+  const why = inputWhy.value.trim();
+  if (!why) {
+    showToast('「ひとことで」を入力してください');
+    inputWhy.focus();
+    return;
+  }
+  const isFirst = !state.why;
+  state.busy = true;
+  btnWhySave.disabled = true;
+  try {
+    await saveWhy(state.uid, why, inputWhyDetail.value);
+    closeWhy();
+    if (!isFirst) showToast('WHYを書き直しました');
+  } catch (err) {
+    handleError(err, '保存できませんでした。通信状況を確認してください。');
+  } finally {
+    state.busy = false;
+    btnWhySave.disabled = false;
+  }
+});
+
+// ============================================================
 // お祝い
 // ============================================================
 function showCelebrate(titles: string[]): void {
@@ -1166,6 +1267,7 @@ const closers: [HTMLElement, () => void][] = [
   [addTaskOverlay, closeAddTask],
   [orderOverlay, closeOrder],
   [mindsetOverlay, closeMindset],
+  [whyOverlay, closeWhy],
   [feedbackOverlay, () => closeOverlay(feedbackOverlay)],
   [celebrateOverlay, () => closeOverlay(celebrateOverlay)],
   [confirmOverlay, () => settleConfirm(false)],
@@ -1222,7 +1324,8 @@ function resetState(): void {
   state.custom = [];
   state.orders = [];
   state.mindsets = [];
-  state.loaded = { progress: false, custom: false, orders: false, mindsets: false };
+  state.why = null;
+  state.loaded = { progress: false, custom: false, orders: false, mindsets: false, why: false };
   state.todayOffset = 0;
   state.views = [];
   state.nextIndex = 0;
@@ -1258,6 +1361,13 @@ function startSync(uid: string): void {
   unsubscribers.push(subscribeMindsets(uid, (list) => {
     state.mindsets = list;
     state.loaded.mindsets = true;
+    recompute();
+    render();
+  }, onDataError));
+  unsubscribers.push(subscribeWhy(uid, (why) => {
+    state.why = why;
+    state.loaded.why = true;
+    recompute();
     render();
   }, onDataError));
 }

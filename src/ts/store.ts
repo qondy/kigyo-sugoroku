@@ -3,7 +3,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { BUILTIN_IDS } from './steps';
-import { CustomMindset, CustomTask, Order, OrderData, OrderStatus, Progress, StageId } from './types';
+import { CustomMindset, CustomTask, MyWhy, Order, OrderData, OrderStatus, Progress, StageId } from './types';
 
 export const MAX_TASK_TITLE = 60;
 export const MAX_MEMO = 1000;
@@ -14,6 +14,8 @@ export const MAX_AMOUNT = 100_000_000;
 export const MAX_MINDSET_TITLE = 60;
 export const MAX_MINDSET_BODY = 500;
 export const MAX_CUSTOM_MINDSETS = 100;
+export const MAX_WHY = 80;
+export const MAX_WHY_DETAIL = 1000;
 
 export const ORDER_STATUSES: OrderStatus[] = ['lead', 'won', 'delivered', 'paid', 'lost'];
 
@@ -221,4 +223,30 @@ export function updateMindset(uid: string, id: string, title: string, body: stri
 
 export function deleteMindset(uid: string, id: string): Promise<void> {
   return deleteDoc(doc(mindsetsCol(uid), id));
+}
+
+// ============================================================
+// わたしのWHY
+// ============================================================
+const whyDoc = (uid: string) => doc(db, 'users', uid, 'profile', 'why');
+
+/** まだ書いていなければ null を渡す */
+export function subscribeWhy(
+  uid: string,
+  onData: (why: MyWhy | null) => void,
+  onError: OnError,
+): Unsub {
+  return onSnapshot(whyDoc(uid), (snap) => {
+    const data = snap.data();
+    const why = data ? str(data.why, MAX_WHY).trim() : '';
+    onData(why ? { why, detail: str(data?.detail, MAX_WHY_DETAIL), updatedAt: msOrZero(data?.updatedAt) } : null);
+  }, onError);
+}
+
+export function saveWhy(uid: string, why: string, detail: string): Promise<void> {
+  return setDoc(whyDoc(uid), {
+    why: why.trim().slice(0, MAX_WHY),
+    detail: detail.trim().slice(0, MAX_WHY_DETAIL),
+    updatedAt: Date.now(),
+  });
 }

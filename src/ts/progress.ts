@@ -17,10 +17,11 @@ export function wonAmountByMonth(orders: Order[]): Map<string, number> {
   return map;
 }
 
-/** 受注ログから、自動判定のマイルストーンを達成しているか調べる */
-export function evaluateAutoRules(orders: Order[]): Set<AutoRule> {
+/** 受注ログ（と「わたしのWHY」）から、自動判定のマイルストーンを達成しているか調べる */
+export function evaluateAutoRules(orders: Order[], hasWhy: boolean): Set<AutoRule> {
   const won = orders.filter(isWon);
   const done = new Set<AutoRule>();
+  if (hasWhy) done.add('why-written');
   if (won.length >= 1) done.add('first-won');
   if (orders.some((o) => o.status === 'delivered' || o.status === 'paid')) done.add('first-delivered');
   if (orders.some((o) => o.status === 'paid')) done.add('first-paid');
@@ -90,6 +91,9 @@ export function currentStage(views: TaskView[]): StageId | null {
   return t ? t.stage : null;
 }
 
+/** 受注ログの記録を待つ自動判定マスか（WHYは自分で書けば進むので含めない） */
+const waitsForOrders = (v: TaskView): boolean => !!v.auto && v.auto !== 'why-written';
+
 /**
  * 「次の一手」の候補を優先順に並べる。
  * いまいる段階の未完了項目のうち、自分で動ける項目を先に、受注ログ待ちの項目を後にする。
@@ -98,7 +102,7 @@ export function nextMoveCandidates(views: TaskView[]): TaskView[] {
   const stage = currentStage(views);
   if (stage === null) return [];
   const pending = views.filter((v) => v.stage === stage && !v.done);
-  return [...pending.filter((v) => !v.auto), ...pending.filter((v) => v.auto)];
+  return [...pending.filter((v) => !waitsForOrders(v)), ...pending.filter(waitsForOrders)];
 }
 
 export interface StageStat {

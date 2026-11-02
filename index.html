@@ -15,7 +15,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#f39c12">
   <title>起業すごろく</title>
-  <meta name="description" content="受注しながら起業するための道しるべ。準備→初受注→継続受注→独立・開業→仕組み化の5段階を、すごろくのように1マスずつ進めます。いまやるべき「次の一手」と、受注ログで売上もわかります。起業の心構えもいつでも読み返せます。">
+  <meta name="description" content="受注しながら起業するための道しるべ。準備→初受注→継続受注→独立・開業→仕組み化の5段階を、すごろくのように1マスずつ進めます。いまやるべき「次の一手」と、受注ログで売上もわかります。起業の心構えと「わたしのWHY」もいつでも読み返せます。">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -74,6 +74,9 @@
 
       <!-- ===== すごろく ===== -->
       <section id="panel-board" class="panel hidden" role="tabpanel" aria-labelledby="tab-board">
+        <!-- わたしのWHY -->
+        <div class="why-card" id="why-card-board"></div>
+
         <!-- 次の一手 -->
         <div class="next-move" id="next-move">
           <p class="next-move__label">
@@ -176,6 +179,8 @@
       </section>
       <!-- ===== 心構え ===== -->
       <section id="panel-mindsets" class="panel hidden" role="tabpanel" aria-labelledby="tab-mindsets">
+        <div class="why-card" id="why-card-mindsets"></div>
+
         <div class="mindset-intro card-surface">
           <span class="mindset-intro__icon"><svg width="28" height="28" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M32 52 C20 44 10 36 10 24 C10 17 15 12 22 12 C27 12 30 15 32 18 C34 15 37 12 42 12 C49 12 54 17 54 24 C54 36 44 44 32 52 Z"/></svg></span>
           <div class="mindset-intro__text">
@@ -293,6 +298,38 @@
           <button type="button" id="btn-mindset-cancel" class="btn btn--ghost">キャンセル</button>
           <button type="submit" id="btn-mindset-save" class="btn btn--primary">保存する</button>
         </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- わたしのWHYモーダル -->
+  <div id="why-overlay" class="dialog-overlay">
+    <form id="why-form" class="modal modal--wide" novalidate>
+      <div class="modal__head">
+        <div class="modal__title">わたしのWHY</div>
+        <button type="button" id="btn-why-close" class="modal__close" aria-label="閉じる">&times;</button>
+      </div>
+      <p class="modal__lead">何を（WHAT）・どうやるか（HOW）はAIでも決められます。でも「なぜやるのか（WHY）」を決められるのは、あなただけです。目的や理由を、自分の言葉にしてみましょう。</p>
+      <div class="why-hints">
+        <span class="why-hints__label">考えるヒント</span>
+        <ul>
+          <li>なぜ、起業したいのですか？</li>
+          <li>誰の、どんな困りごとを解決したいですか？</li>
+          <li>お金のほかに、この仕事で得たいものは何ですか？</li>
+          <li>その答えに、もう一度「それはなぜ？」と聞いてみると？</li>
+        </ul>
+      </div>
+      <div class="field">
+        <label class="field__label" for="input-why">ひとことで<span class="field__req">必須</span></label>
+        <input type="text" id="input-why" maxlength="80" placeholder="例：小さなお店が、大きなお店に負けない場所をつくりたいから" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label class="field__label" for="input-why-detail">くわしく<span class="field__hint">任意・きっかけや思い</span></label>
+        <textarea id="input-why-detail" rows="5" maxlength="1000" placeholder="例：実家の商店が、ホームページがないだけで選ばれなくなっていくのを見てきた。良いものを作っている人が、ちゃんと見つけてもらえるようにしたい。"></textarea>
+      </div>
+      <div class="modal__actions">
+        <button type="button" id="btn-why-cancel" class="btn btn--ghost">キャンセル</button>
+        <button type="submit" id="btn-why-save" class="btn btn--primary">保存する</button>
       </div>
     </form>
   </div>

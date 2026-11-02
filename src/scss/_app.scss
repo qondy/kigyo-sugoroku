@@ -973,6 +973,131 @@
   }
 }
 
+// ===== わたしのWHY =====
+.why-card {
+  position: relative;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  background: $color-text;
+  color: #fff;
+
+  &:empty {
+    display: none;
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+
+    .link-btn {
+      color: #fff;
+      opacity: 0.85;
+    }
+  }
+
+  &__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: $font-size-xs;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: $color-primary;
+  }
+
+  &__why {
+    font-size: $font-size-xl;
+    font-weight: 800;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  &__detail {
+    margin-top: $spacing-sm;
+    font-size: $font-size-sm;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.78);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  &__updated {
+    margin-top: $spacing-sm;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  // まだ書いていないとき：問いかけのカード
+  &.is-empty {
+    background: $color-surface;
+    color: $color-text;
+    border: 2px dashed $color-primary;
+
+    .why-card__label {
+      color: $color-primary-ink;
+    }
+  }
+
+  &__question {
+    font-size: $font-size-xl;
+    font-weight: 800;
+    line-height: 1.45;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__lead {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    line-height: 1.75;
+    margin-bottom: $spacing-md;
+  }
+
+  @media (max-width: $bp-mobile) {
+    padding: $spacing-md;
+
+    &__why,
+    &__question {
+      font-size: $font-size-lg;
+    }
+  }
+}
+
+.why-hints {
+  background: $color-surface-2;
+  border-radius: $radius-md;
+  padding: 12px $spacing-md;
+  margin-bottom: $spacing-lg;
+
+  &__label {
+    display: block;
+    font-size: $font-size-xs;
+    font-weight: 800;
+    color: $color-primary-ink;
+    margin-bottom: 4px;
+  }
+
+  ul {
+    list-style: disc;
+    padding-left: 1.2em;
+  }
+
+  li {
+    font-size: $font-size-sm;
+    line-height: 1.8;
+  }
+}
+
+.modal__lead {
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: 1.7;
+  margin-bottom: $spacing-md;
+}
+
 // ===== 今日の心構え =====
 .today-mindset {
   margin-bottom: $spacing-md;
