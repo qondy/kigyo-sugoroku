@@ -241,7 +241,7 @@
       border-radius: 50%;
       background: $color-text;
       color: #fff;
-      font-size: 10px;
+      font-size: 11px;
       line-height: 16px;
       text-align: center;
     }
@@ -362,7 +362,7 @@
   }
 
   &__now {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     color: #fff;
     background: $color-primary-ink;
@@ -618,7 +618,7 @@
   }
 
   &__value {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     color: $color-primary-ink;
     min-height: 15px;
@@ -832,7 +832,7 @@
 
 .field {
   &__req {
-    font-size: 11px;
+    font-size: 12px;
     color: $color-primary-ink;
     font-weight: 700;
     margin-left: 6px;
@@ -1027,7 +1027,7 @@
 
   &__updated {
     margin-top: $spacing-sm;
-    font-size: 11px;
+    font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
   }
 
@@ -1089,14 +1089,14 @@
   }
 
   &__en {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.08em;
     color: $color-primary;
   }
 
   &__ja {
-    font-size: 11px;
+    font-size: 12px;
     color: rgba(255, 255, 255, 0.55);
   }
 
